@@ -1,39 +1,34 @@
-from fastapi import FastAPI, Depends
-import hashlib
+from fastapi import FastAPI, Depends, HTTPException
+from pydantic import BaseModel
 import json
 import os
 
+class User(BaseModel):
+    id: int
+    password: str
+
 app = FastAPI()
 
-
-class User:
-    def __init__(self, name: str, password: str):
-        self.name = name
-        self.password = password
-
-    def hash_password(self) -> str:
-        return hashlib.sha256(self.password.encode()).hexdigest()
-
+USERS_FILE = "users.json"
 
 def save_user(user: User):
-    user_data = {"name": user.name, 
-                 "password": user.hash_password()
-                 }
-    if os.path.exists("users.json"):
-        with open("users.json", "r") as file:
-            users = json.load(file)
-    else:
-        users = []
-    
-    users.append(user_data)
+    users = load_users()
+    if any(u["id"] == user.id for u in users):
+        raise HTTPException(status_code=400, detail="User ID already exists")
+    users.append(user.dict())
+    with open(USERS_FILE, "w") as f:
+        json.dump(users, f)
+    return user
 
-    with open("users.json", "w") as file:
-        json.dump(users, file, indent=4)
+def load_users():
+    if not os.path.exists(USERS_FILE):
+        return []
+    with open(USERS_FILE, "r") as f:
+        try:
+            return json.load(f)
+        except json.JSONDecodeError:
+            return []
 
-
-@app.post("/login/")
-async def login_user(user: User = Depends(User)):
-    save_user(user)
-    response = {"message": f"Bienvenido, {user.name}"}
-
-    return response
+@app.post("/register/")
+async def register_user(user: User, saved_user: User = Depends(save_user)):
+    return {"message": "User registered successfully", "user": saved_user}
