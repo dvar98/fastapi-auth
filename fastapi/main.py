@@ -24,9 +24,18 @@ class UserAuth(SQLModel, table=True):
     password: str = Field()
     user_id: int = Field(foreign_key="user.id")
 
+class Productos(SQLModel, table=True):
+    id : int = Field(default=None, 
+                     sa_column=Column(Integer, primary_key=True, index=True, autoincrement=True))
+    nombre : str = Field(sa_column=Column(String, nullable=False))
+    precio : float = Field(sa_column=Column(float, nullable=False))
+    descripcion : str = Field(sa_column=Column(String, nullable=False))
+    cantidad : int = Field(sa_column=Column(Integer, nullable=False))
+    user_id : int = Field(foreign_key="user.id")
 
 User.auth = Relationship(back_populates="user")
 UserAuth.user = Relationship(back_populates="auth")
+User.productos = Relationship(back_populates="user")
 
 sqlite_file_name = "database.db"
 sqlite_url = f"sqlite:///{sqlite_file_name}"
@@ -141,3 +150,13 @@ def delete_user(user_id: int, session: SessionDep):
     session.delete(user)
     session.commit()
     return {"ok": True}
+
+
+
+
+
+@app.get("/users/{user_id}/registro/")
+def user_register(user_id: int, session: SessionDep, productos: Productos):
+    user = session.get(User, user_id)
+    productos = session.get(Productos, productos)
+    
