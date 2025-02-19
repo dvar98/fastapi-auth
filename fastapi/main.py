@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException, Query
 import hashlib
 from pydantic import BaseModel, validator
-from typing import Annotated
+from typing import Annotated, List
 from sqlmodel import Field, Session, SQLModel, create_engine, select, Relationship
 from sqlalchemy import JSON, Column, Integer, String
 
@@ -24,18 +24,54 @@ class UserAuth(SQLModel, table=True):
     password: str = Field()
     user_id: int = Field(foreign_key="user.id")
 
-class Productos(SQLModel, table=True):
-    id : int = Field(default=None, 
-                     sa_column=Column(Integer, primary_key=True, index=True, autoincrement=True))
-    nombre : str = Field(sa_column=Column(String, nullable=False))
-    precio : float = Field(sa_column=Column(float, nullable=False))
-    descripcion : str = Field(sa_column=Column(String, nullable=False))
-    cantidad : int = Field(sa_column=Column(Integer, nullable=False))
-    user_id : int = Field(foreign_key="user.id")
 
 User.auth = Relationship(back_populates="user")
 UserAuth.user = Relationship(back_populates="auth")
+
+
+class ProductoVentaLink(SQLModel, table=True):
+    id: int = Field(default=None,
+                    sa_column=Column(Integer, primary_key=True, index=True, autoincrement=True))
+    producto_id: int = Field(foreign_key="producto.id")
+    venta_id: int = Field(foreign_key="venta.id")
+
+
+class Venta(SQLModel, table=True):
+    id: int = Field(default=None,
+                    sa_column=Column(Integer, primary_key=True, index=True, autoincrement=True))
+    fecha: str = Field(sa_column=Column(String, nullable=False))
+    total: float = Field(sa_column=Column(Integer, nullable=False))
+    user_id: int = Field(foreign_key="user.id")
+    productos: List["Producto"] = Relationship(
+        back_populates="ventas", link_model=ProductoVentaLink)
+
+
+class Producto(SQLModel, table=True):
+    id: int = Field(default=None,
+                    sa_column=Column(Integer, primary_key=True, index=True, autoincrement=True))
+    nombre: str = Field(sa_column=Column(String, nullable=False))
+    precio: float = Field(sa_column=Column(Integer, nullable=False))
+    descripcion: str = Field(sa_column=Column(String, nullable=False))
+    cantidadStock: int = Field(sa_column=Column(Integer, nullable=False))
+    user_id: int = Field(foreign_key="user.id")
+    ventas: List["Venta"] = Relationship(
+        back_populates="productos", link_model=ProductoVentaLink)
+
+
 User.productos = Relationship(back_populates="user")
+
+
+class Cliente(SQLModel, table=True):
+    id: int = Field(default=None,
+                    sa_column=Column(Integer, primary_key=True, index=True, autoincrement=True))
+    nombre: str = Field(sa_column=Column(String, nullable=False))
+    celular: str = Field(sa_column=Column(String, nullable=False))
+    cedula: str = Field(sa_column=Column(String, nullable=False))
+    correo: str = Field(sa_column=Column(String, nullable=False))
+
+
+Venta.cliente = Relationship(back_populates="ventas")
+
 
 sqlite_file_name = "database.db"
 sqlite_url = f"sqlite:///{sqlite_file_name}"
@@ -152,11 +188,105 @@ def delete_user(user_id: int, session: SessionDep):
     return {"ok": True}
 
 
+@app.get("/productos/")
+def read_productos(
+    session: SessionDep,
+    offset: int = 0,
+    limit: Annotated[int, Query(le=100)] = 100,
+) -> list[Producto]:
+    productos = session.exec(
+        select(Producto).offset(offset).limit(limit)).all()
+    return productos
 
 
+@app.get('/{user_id}/productos/')
+def read_productos_by_user(user_id: int, session: SessionDep):
+    productos = session.exec(select(Producto).where(
+        Producto.user_id == user_id)).all()
+    return productos
 
-@app.get("/users/{user_id}/registro/")
-def user_register(user_id: int, session: SessionDep, productos: Productos):
-    user = session.get(User, user_id)
-    productos = session.get(Productos, productos)
-    
+
+@app.get("/productos/{producto_id}")
+def read_producto(producto_id: int, session: SessionDep) -> Producto:
+    producto = session.get(Producto, producto_id)
+    if not producto:
+        raise HTTPException(status_code=404, detail="Producto not found")
+    return producto
+
+
+class ProductoCreate(BaseModel):
+    nombre: str
+    precio: float
+    descripcion: str
+    cantidadStock: int
+
+
+@app.post("/{user_id}/productos/create/")
+def create_product(user_id: str, product: ProductoCreate, session: SessionDep):
+    product = Producto(**product.model_dump(), user_id=user_id)
+    session.add(product)
+    session.commit()
+    session.refresh(product)
+    return product
+
+
+@app.delete("/{user_id}/productos/{producto_id}")
+def delete_product(producto_id: int, session: SessionDep):
+    producto = session.get(Producto, producto_id)
+    if not producto:
+        raise HTTPException(status_code=404, detail="Producto not found")
+    session.delete(producto)
+    session.commit()
+    return {"ok": True}
+
+
+class VentaCreate(BaseModel):
+    fecha: str
+    productos: List[int]
+
+
+@app.post("{user_id}/ventas/create/")
+def create_venta(user_id: str, venta: VentaCreate, session: SessionDep):
+    # Calcular total
+    totalVenta = 0
+    for producto_id in venta.productos:
+        producto = session.get(Producto, producto_id)
+        totalVenta += producto.precio
+    # Crear la venta
+    venta_db = Venta(fecha=venta.fecha, total=totalVenta,
+                     user_id=user_id)
+    session.add(venta_db)
+    session.commit()
+    session.refresh(venta_db)
+
+    # Crear las relaciones con los productos
+    for producto_id in venta.productos:
+        # restar en stock
+        producto = session.get(Producto, producto_id)
+        if producto.cantidadStock == 0:
+            raise HTTPException(
+                status_code=400, detail="Producto sin stock")
+        producto.cantidadStock -= 1
+        session.add(producto)
+        producto_venta_link = ProductoVentaLink(
+            producto_id=producto_id, venta_id=venta_db.id)
+        session.add(producto_venta_link)
+
+    session.commit()
+    session.refresh(venta_db)
+    return venta_db
+
+
+@app.get("/{user_id}/ventas/")
+def read_ventas_by_user(user_id: int, session: SessionDep):
+    ventas = session.exec(select(Venta).where(
+        Venta.user_id == user_id)).all()
+    return ventas
+
+
+@app.get("/ventas/{venta_id}")
+def read_venta(venta_id: int, session: SessionDep) -> Venta:
+    venta = session.get(Venta, venta_id)
+    if not venta:
+        raise HTTPException(status_code=404, detail="Venta not found")
+    return venta
