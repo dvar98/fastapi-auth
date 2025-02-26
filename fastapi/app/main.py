@@ -4,6 +4,8 @@ from pydantic import BaseModel, validator
 from typing import Annotated, List
 from sqlmodel import Field, Session, SQLModel, create_engine, select, Relationship
 from sqlalchemy import JSON, Column, Integer, String
+import os
+from dotenv import load_dotenv
 
 app = FastAPI()
 
@@ -72,12 +74,11 @@ class Cliente(SQLModel, table=True):
 
 Venta.cliente = Relationship(back_populates="ventas")
 
+load_dotenv()
 
-sqlite_file_name = "database.db"
-sqlite_url = f"sqlite:///{sqlite_file_name}"
+DATABASE_URL = os.getenv("DATABASE_URL")
 
-connect_args = {"check_same_thread": False}
-engine = create_engine(sqlite_url, connect_args=connect_args)
+engine = create_engine(DATABASE_URL)
 
 
 def create_db_and_tables():
