@@ -1,0 +1,16 @@
+$LOGO: #F4A86C;
+$COLOR-BRAND: #002D4E;
+$COLOR-BRAND2: #626F78;
+$FOCO: #3A3A3A;
+
+header {
+  background-color: $COLOR-BRAND;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  padding: 20px 0px;
+
+  img {
+    width: 150px;
+  }
+}

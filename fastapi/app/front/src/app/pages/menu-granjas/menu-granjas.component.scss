@@ -1,0 +1,145 @@
+$LOGO: #F4A86C;
+$COLOR-BRAND: #002D4E;
+$COLOR-BRAND2: #626F78;
+$FOCO: #3A3A3A;
+$ARROW-COLOR: #FFDBBF;
+
+main {
+  height: 100vh;
+  justify-content: center;
+
+  #mainBox {
+    // max-width: 380px;
+    gap: 20px;
+    background-color: $COLOR-BRAND2;
+    padding: 20px 20px 50px 20px;
+    border-radius: 30px;
+
+    #first-container {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      div {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+
+        h1 {
+          color: $ARROW-COLOR;
+          letter-spacing: 10px;
+          text-wrap: wrap;
+          text-align: center;
+        }
+
+        img {
+          width: 100px;
+        }
+      }
+
+      #arrowBack {
+        cursor: pointer;
+      }
+    }
+
+    #formGranjas {
+      padding: 10px 20px;
+      color: white;
+      border-radius: 30px;
+      background-color: $FOCO;
+      gap: 10px;
+
+      h1 {
+        letter-spacing: 10px;
+        text-wrap: wrap;
+        text-align: center;
+      }
+
+      #ulGranjas {
+        gap: 15px;
+        padding: 30px;
+
+        #box-granja {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+
+          button {
+            width: 100%;
+          }
+        }
+
+        #box-crearGranja {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          gap: 20px;
+
+          .messageError {
+            animation: vibrate 0.2s linear 3;
+            color: red;
+            text-align: center;
+            text-wrap: nowrap;
+            // font-size: 15px;
+          }
+
+          button {
+            padding: 10px 20px;
+            background-color: $COLOR-BRAND;
+            color: white;
+            // border: none;
+            // border-radius: 20px;
+            transition: all 500ms;
+            font-weight: 600;
+            border: 3px solid $COLOR-BRAND;
+
+            &:hover {
+              background-color: $LOGO;
+              color: $COLOR-BRAND;
+            }
+          }
+
+          #btnCancelar {
+            background-color: transparent;
+            color: $COLOR-BRAND;
+            border: 3px solid $COLOR-BRAND;
+
+            // font-weight: 600;
+            &:hover {
+              background-color: $LOGO;
+            }
+          }
+        }
+
+        #tools {
+          display: flex;
+          justify-content: space-between;
+          gap: 20px;
+
+          i {
+            font-size: 40px;
+          }
+        }
+
+        button {
+          letter-spacing: 5px;
+          border: none;
+          border-radius: 20px;
+        }
+      }
+    }
+  }
+}
+
+i {
+  transition: all 0.3s;
+  cursor: pointer;
+
+  &:hover {
+    color: $LOGO;
+    // font-size: 50px;
+  }
+}

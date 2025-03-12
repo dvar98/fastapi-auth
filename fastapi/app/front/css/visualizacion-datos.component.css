@@ -1,0 +1,62 @@
+main {
+  height: 100vh;
+  justify-content: center;
+}
+main #mainBox {
+  gap: 20px;
+  background-color: #626F78;
+  padding: 40px 40px 100px 40px;
+  border-radius: 30px;
+}
+main #mainBox #first-container {
+  width: 100%;
+  justify-content: space-between;
+  flex-direction: row;
+}
+main #mainBox #first-container #arrowBack {
+  cursor: pointer;
+}
+main #mainBox h1,
+main #mainBox h2 {
+  color: #FFDBBF;
+  letter-spacing: 10px;
+  text-wrap: wrap;
+  text-align: center;
+}
+main #mainBox #formGalpones {
+  padding: 10px 20px;
+  color: white;
+  border-radius: 30px;
+  background-color: #3A3A3A;
+  gap: 10px;
+}
+main #mainBox #formGalpones #ulGranjas {
+  gap: 15px;
+  padding: 30px;
+}
+main #mainBox #formGalpones #ulGranjas p {
+  text-wrap: nowrap;
+}
+
+table {
+  width: 100%;
+  border-spacing: 10px;
+  border: 2px white solid;
+  font-size: 22px;
+  letter-spacing: 3px;
+}
+table tbody .bold-row {
+  font-weight: bold;
+}
+table tbody .encabezado th {
+  text-align: center;
+}
+table tbody td {
+  min-width: 120px;
+  text-align: center;
+  padding: 3px 8px;
+}
+table tbody th,
+table tbody td {
+  border: 2px white solid;
+}/*# sourceMappingURL=visualizacion-datos.component.css.map */

@@ -1,0 +1,26 @@
+<main class="box">
+  <div class="background-image" style="background-image: url(../assets/images/fondo_gallinas.jpg);"></div>
+  <!--Imagen de fondo-->
+
+  <!-- Inicio contenido -->
+  <section>
+    <div id="mainBox" class="box">
+      <app-link-navegacion [paths]="this.path"></app-link-navegacion>
+      <div id="first-container" class="box">
+        <a style="width: 30%;" (click)="arrowBack()" id="arrowBack">
+          <img src="../../../assets/ico/arrow-left.png" alt="">
+        </a>
+        <img style="width: 30%" src="../../../assets/ico/Galpon.png" alt="">
+        <div style="width: 30%"></div>
+      </div>
+      <div id="formGranjas" class="box">
+        <h1 class="label">¿Qué desea hacer?</h1>
+        <div id="ulGranjas" class="box">
+          <button (click)="option('visualización-datos')" class="subcontent">Visualización de datos</button>
+          <button (click)="option('ventas')" class="subcontent">Ventas</button>
+          <button (click)="option('gastos')" class="subcontent">Gastos</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>

@@ -1,0 +1,96 @@
+@font-face {
+  font-family: "Franklin Gothic";
+  src: url("assets/fonts/Franklin Gothic Medium Regular.ttf");
+  /* Ruta a tu archivo .ttf */
+}
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Forum";
+}
+
+.content-desktop {
+  font-family: "Forum", serif;
+  font-size: 28px;
+  font-stretch: 20%;
+}
+
+.subtitle-desktop {
+  font-family: "Forum", serif;
+  font-size: 34px;
+  font-stretch: 25%;
+}
+
+.title-desktop {
+  font-family: "Franklin Gothic", serif;
+  font-size: 32px;
+  font-stretch: 30%;
+}
+
+.subcontent {
+  font-family: "Forum", serif;
+  font-size: 25px;
+  letter-spacing: 2px;
+}
+
+.label {
+  font-family: "Franklin Gothic", serif;
+  font-size: 22px;
+  letter-spacing: 10px;
+  font-weight: 599;
+}
+
+.box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+.box .background-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-repeat: no-repeat;
+  background-size: cover;
+  filter: blur(10px);
+}
+
+button {
+  color: #FFF;
+  background-color: #002D4E;
+  border-radius: 20px;
+  border: 1px solid #FFF;
+  padding: 15px 30px;
+  cursor: pointer;
+}
+button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+button:hover {
+  background-color: rgba(255, 255, 255, 0.8);
+  color: #002F79;
+  box-shadow: 0 0 12px rgb(255, 255, 255);
+}
+
+.labelForm {
+  color: rgba(255, 255, 255, 0.7);
+  -webkit-text-stroke: 0.5px black;
+  /* Ancho y color del borde */
+}
+
+.inputForm {
+  font-size: 18px;
+  padding: 10px 25px;
+  border: none;
+  border-radius: 50px;
+  outline: none;
+  transition: all 0.4s ease;
+}
+
+.inputForm:hover {
+  box-shadow: 0 0 30px #002D4E;
+}/*# sourceMappingURL=styles.css.map */

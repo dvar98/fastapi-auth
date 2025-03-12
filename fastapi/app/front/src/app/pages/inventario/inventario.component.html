@@ -1,0 +1,50 @@
+<main class="box">
+  <div class="background-image" style="background-image: url(../assets/images/fondo_gallinas.jpg);"></div>
+  <!--Imagen de fondo-->
+
+  <!-- Inicio contenido -->
+  <section>
+    <div id="mainBox" class="box">
+      <div id="first-container">
+        <a (click)="arrowBack()" id="arrowBack">
+          <img src="../../../assets/ico/arrow-left.png" alt="">
+        </a>
+        <div>
+          <img src="../../../assets/ico/Galpon.png" alt="">
+          <h1 class="label">Inventario</h1>
+        </div>
+        <div style="width: 30px;"></div>
+      </div>
+      <div id="formGranjas" class="box">
+        <div id="ulGranjas" class="box">
+          <section>
+            <label class="labelForm" for="fecha">Fecha</label>
+            <input class="inputForm" type="text" name="fecha" id=""
+              value="{{inventario.fecha.toDate() | date:'fullDate':'es'}}" readonly>
+          </section>
+          <section>
+            <label class="labelForm" for="hora">Hora</label>
+            <input class="inputForm" type="text" name="hora" id="" value="{{inventario.fecha.toDate() | date:'h:mm a'}}"
+              readonly>
+          </section>
+          <div id="tipo">
+            <table>
+              <tr>
+                <th>Tipo</th>
+                <th>Cantidad</th>
+                <th>Total</th>
+              </tr>
+              <tr *ngFor="let key of getKeysObject(this.filas)">
+                <td>{{ key }}</td>
+                <td><input class="inputForm" type="number" min="0" value="0" (input)="changeCantidad(key,$event)"
+                    (input)="changeValorUnitario(key,$event)"></td>
+                <td><input class="inputForm" type="text" value="{{filas[key].total()}}" readonly></td>
+            </table>
+          </div>
+          <h2>Total Inventario: {{inventario.TotalInventario}}</h2>
+        </div>
+        <button (click)="crearInventario()">Registrar Inventario</button>
+      </div>
+    </div>
+  </section>
+</main>

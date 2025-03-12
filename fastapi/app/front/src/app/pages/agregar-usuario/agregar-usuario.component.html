@@ -1,0 +1,32 @@
+<main class="box">
+    <div class="background-image" style="background-image: url(../assets/images/fondo_gallinas.jpg);"></div>
+    <!-- Contenido del main -->
+  
+  
+    <section id="inicioSesion" class="box">
+      <div id="login" class="box">
+        <img  src="../assets/ico/userIco.svg" alt="">
+        <div [@fadeInOut] id="form" class="box">
+          <label for="user" class="label labelForm">USUARIO</label>
+          <input class="inputForm messageError" type="email" id="email" name="user" autocomplete="email" #inputUser>
+          <span *ngIf="messageError" [@fadeInOutFast] class="messageError" id="emailError">Por favor, ingresa una dirección de correo electrónico
+            válida.</span>
+  
+            <label for="constrasena" class="label labelForm">CONTRASEÑA</label>
+            <input name="constrasena" type="password" class="inputForm" #inputContrasena>
+            <span *ngIf="messageErrorForm" [@fadeInOutFast] class="messageError" id="formError">Correo o contraseña incorrecctos</span>
+            <label for="role" class="label labelForm">ROL</label>
+            <input name="role" type="text" class="inputForm" #inputRole>
+            <span *ngIf="messageErrorForm" [@fadeInOutFast] class="messageError" id="formError">Correo o contraseña incorrecctos</span>
+            <label for="nombre" class="label labelForm">NOMBRE</label>
+            <input name="nombre" type="text" class="inputForm" #inputNombre>
+            <span *ngIf="messageErrorForm" [@fadeInOutFast] class="messageError" id="formError">Correo o contraseña incorrecctos</span>
+            <label for="granja" class="label labelForm">GRANJA</label>
+            <input name="granja" type="text" class="inputForm" #inputGranja>
+            <span *ngIf="messageErrorForm" [@fadeInOutFast] class="messageError" id="formError">Correo o contraseña incorrecctos</span>
+        </div>
+      </div>
+      <button class="subcontent" (click)="register(inputUser.value,inputContrasena.value,inputNombre.value, [{ path: inputUser.value }])">resgitar</button>
+    </section>
+  </main>
+  

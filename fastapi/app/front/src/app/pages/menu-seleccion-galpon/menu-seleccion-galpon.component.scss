@@ -1,0 +1,52 @@
+$LOGO: #F4A86C;
+$COLOR-BRAND: #002D4E;
+$COLOR-BRAND2: #626F78;
+$FOCO: #3A3A3A;
+
+main {
+  height: 100vh;
+  justify-content: center;
+
+  #mainBox {
+    max-width: 380px;
+    gap: 20px;
+    background-color: $COLOR-BRAND2;
+    padding: 20px 20px 50px 20px;
+    border-radius: 30px;
+
+    #first-container {
+      width: 100%;
+      justify-content: space-between;
+      flex-direction: row;
+
+      #arrowBack {
+        cursor: pointer;
+      }
+    }
+
+    #formGranjas {
+      padding: 10px 20px;
+      color: white;
+      border-radius: 30px;
+      background-color: $FOCO;
+      gap: 10px;
+
+      h1 {
+        letter-spacing: 10px;
+        text-wrap: wrap;
+        text-align: center;
+      }
+
+      #ulGranjas {
+        gap: 15px;
+        padding: 30px;
+
+        button {
+          letter-spacing: 5px;
+          border: none;
+          border-radius: 20px;
+        }
+      }
+    }
+  }
+}

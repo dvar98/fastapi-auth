@@ -1,0 +1,51 @@
+$LOGO: #F4A86C;
+$COLOR-BRAND: #002D4E;
+$COLOR-BRAND2: #626F78;
+$FOCO: #3A3A3A;
+
+main {
+  height: 100vh;
+  justify-content: center;
+
+  #inicioSesion {
+    width: 400px;
+    gap: 50px;
+    padding: 20px 50px 50px 50px;
+    border-radius: 30px;
+    background-color: $COLOR-BRAND2;
+
+    #login {
+      width: 100%;
+      gap: 30px;
+
+      #form {
+        width: 100%;
+        gap: 20px;
+        align-items: stretch;
+        text-align: center;
+
+        .labelForm {
+          width: 100%;
+          color: rgba(255, 255, 255, 0.7);
+          -webkit-text-stroke: 0.5px black;
+          /* Ancho y color del borde */
+        }
+
+        .inputForm {
+          width: 100%;
+          font-size: 18px;
+          padding: 10px 25px;
+          // border: 2px solid $COLOR-BRAND;
+          border: none;
+          border-radius: 50px;
+          outline: none;
+          transition: all 0.4s ease;
+        }
+
+        .inputForm:hover {
+          box-shadow: 0 0 30px $COLOR-BRAND;
+        }
+      }
+    }
+  }
+}

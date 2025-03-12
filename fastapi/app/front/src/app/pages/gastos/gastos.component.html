@@ -1,0 +1,59 @@
+<main class="box">
+  <div class="background-image" style="background-image: url(../assets/images/fondo_gallinas.jpg);"></div>
+  <!--Imagen de fondo-->
+
+  <!-- Inicio contenido -->
+  <section>
+    <div id="mainBox" class="box">
+      <app-link-navegacion [paths]="this.path"></app-link-navegacion>
+      <div id="first-container">
+        <a (click)="arrowBack()" id="arrowBack">
+          <img src="../../../assets/ico/arrow-left.png" alt="">
+        </a>
+        <div>
+          <img src="../../../assets/ico/Galpon.png" alt="">
+          <h1 class="label">Registros de Gastos</h1>
+        </div>
+        <div style="width: 30px;"></div>
+      </div>
+      <div id="formGranjas" class="box">
+        <div id="ulGranjas" class="box">
+          <section>
+            <label class="labelForm" for="fecha">Fecha</label>
+            <input value="{{gasto.fecha.toDate() | date:'fullDate':'es'}}" class="inputForm" type="text" name="fecha"
+              id="" readonly>
+          </section>
+          <section>
+            <label class="labelForm" for="hora">Hora</label>
+            <input value="{{gasto.fecha.toDate() | date:'h:mm a'}}" class="inputForm" type="text" name="hora" id=""
+              readonly>
+          </section>
+          <section>
+            <label class="labelForm" for="cliente">Concepto</label>
+            <input [value]="this.gasto.concepto" (change)="setConcepto($event)" class="inputForm" type="text"
+              name="cliente" id="">
+          </section>
+          <section>
+            <label class="labelForm" for="cliente">Categoria</label>
+            <input [value]="this.gasto.categoria" (change)="setCategoria($event)" class="inputForm" type="text"
+              name="cliente" id="">
+          </section>
+          <section>
+            <label class="labelForm" for="valor">Valor Unitario</label>
+            <input class="inputForm" type="text" value="$0"
+              (input)="formatCurrency($event); changeValorUnitario($event)">
+          </section>
+          <section>
+            <label class="labelForm" for="valor">Cantidad</label>
+            <input class="inputForm" type="number" min="0" value="0" (input)="changeCantidad($event)">
+          </section>
+          <section>
+            <label class="labelForm" for="valor">Total</label>
+            <input class="inputForm" type="text" value="{{moneyFormat(gasto.total)}}" readonly>
+          </section>
+        </div>
+        <button (click)="crearGasto()" class="content-desktop">Registrar</button>
+      </div>
+    </div>
+  </section>
+</main>

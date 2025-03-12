@@ -1,0 +1,32 @@
+main {
+  height: 100vh;
+  justify-content: center;
+}
+main #mainBox {
+  max-width: 380px;
+  gap: 20px;
+  background-color: #626F78;
+  padding: 20px 20px 50px 20px;
+  border-radius: 30px;
+}
+main #mainBox #formGranjas {
+  padding: 10px 20px;
+  color: white;
+  border-radius: 30px;
+  background-color: #3A3A3A;
+  gap: 10px;
+}
+main #mainBox #formGranjas h1 {
+  letter-spacing: 10px;
+  text-wrap: wrap;
+  text-align: center;
+}
+main #mainBox #formGranjas #ulGranjas {
+  gap: 15px;
+  padding: 30px;
+}
+main #mainBox #formGranjas #ulGranjas button {
+  letter-spacing: 5px;
+  border: none;
+  border-radius: 20px;
+}/*# sourceMappingURL=menu-granjas.component.css.map */

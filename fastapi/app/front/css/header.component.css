@@ -1,0 +1,10 @@
+header {
+  background-color: #002D4E;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  padding: 20px 0px;
+}
+header img {
+  width: 150px;
+}/*# sourceMappingURL=header.component.css.map */

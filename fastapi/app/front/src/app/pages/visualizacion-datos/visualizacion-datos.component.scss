@@ -1,0 +1,438 @@
+$LOGO: #F4A86C;
+$COLOR-BRAND: #002D4E;
+$COLOR-BRAND2: #626F78;
+$FOCO: #3A3A3A;
+$ARROW-COLOR: #FFDBBF;
+
+@media screen and (max-width: 1200px) {
+  #mainBox {
+    width: 100%;
+  }
+}
+
+main {
+  min-height: 100vh;
+  justify-content: center;
+
+  #mainBox {
+    gap: 20px;
+    padding: 40px 40px 100px 40px;
+    border-radius: 30px;
+
+    #first-container {
+      width: 100%;
+      justify-content: space-between;
+      flex-direction: row;
+
+      #arrowBack {
+        cursor: pointer;
+      }
+    }
+
+    h1,
+    h2 {
+      color: white;
+      letter-spacing: 10px;
+      text-wrap: wrap;
+      text-align: center;
+      margin: 10px 0;
+    }
+
+
+    #ulGranjas {
+      gap: 15px;
+      padding: 20px;
+      background-color: $FOCO;
+      border-radius: 15px;
+
+      #navegacion {
+        display: flex;
+        flex-direction: row;
+        gap: 50px;
+
+        button {
+          background-color: $COLOR-BRAND2;
+
+          &:hover {
+            background-color: $COLOR-BRAND;
+            color: white;
+          }
+        }
+      }
+
+      .selected {
+        background-color: $COLOR-BRAND !important;
+      }
+
+      #top-table {
+        flex-direction: row;
+        width: 100%;
+
+        #arrows {
+          flex-direction: row;
+          gap: 30px;
+          display: flex;
+          justify-content: center;
+          margin: 10px 0;
+
+          i {
+            cursor: pointer;
+            color: white;
+            font-size: 24px;
+          }
+        }
+
+        .select-container {
+          display: flex;
+          justify-content: flex-end;
+
+          select {
+            font-size: 18px;
+          }
+        }
+      }
+
+      #table {
+        width: 100%;
+        padding: 10px;
+        overflow-x: scroll;
+        border: 2px white solid;
+        box-shadow: inset 0 0 20px 0 white;
+        border-radius: 10px;
+
+        table {
+          width: 100%;
+          border-spacing: 10px;
+          font-size: 22px;
+          letter-spacing: 3px;
+          color: white;
+
+          tbody {
+            .encabezado {
+              th {
+                text-align: center;
+              }
+            }
+
+            .table-content {
+              td {
+                min-width: 120px;
+                text-align: center;
+                padding: 3px 8px;
+              }
+
+              th,
+              td {
+                border: 2px white solid;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    #toggle-chart-bar {
+      cursor: pointer;
+      padding: 10px;
+      background-color: transparent;
+      text-align: center;
+      position: relative;
+      border-top: 2px solid #ffffff;
+      margin-top: 10px;
+      margin-bottom: -2px;
+    }
+
+    #toggle-chart-arrow {
+      width: 0;
+      height: 0;
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      border-top: 5px solid #ffffff;
+      display: inline-block;
+      margin: 0 auto;
+    }
+
+    .arrow-up {
+      border-top: none;
+      border-bottom: 5px solid #ffffff;
+    }
+
+    #graficas {
+      #chart-navigation {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: rgba(0, 0, 0, 0.5);
+        padding: 20px;
+        border-radius: 10px;
+      }
+
+      .chart-display {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .select-container {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+      }
+
+      .date-filter-container {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-left: 20px;
+
+        label {
+          color: $COLOR-BRAND2;
+        }
+
+        input[type="date"] {
+          padding: 5px;
+          font-size: 16px;
+          color: black;
+          background-color: $COLOR-BRAND2;
+          border: 2px solid $COLOR-BRAND;
+          border-radius: 5px;
+          outline: none;
+          transition: all 0.3s ease;
+        }
+
+        button {
+          padding: 5px 10px;
+          font-size: 16px;
+          background-color: $COLOR-BRAND;
+          color: white;
+          border: none;
+          border-radius: 5px;
+          cursor: pointer;
+          transition: background-color 0.3s ease;
+
+          &:hover {
+            background-color: darken($COLOR-BRAND, 10%);
+          }
+        }
+      }
+
+      .select-container select {
+        padding: 10px 20px;
+        font-size: 16px;
+        color: $COLOR-BRAND2;
+        background-color: $FOCO;
+        border: 2px solid $COLOR-BRAND;
+        border-radius: 5px;
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        cursor: pointer;
+        outline: none;
+        transition: all 0.3s ease;
+      }
+
+      .select-container::after {
+        content: '';
+        position: absolute;
+        right: 10px; // Ajusta este valor para mover la flecha más a la derecha
+        top: 50%;
+        transform: translateY(-50%);
+        border-width: 6px;
+        border-style: solid;
+        border-color: $ARROW-COLOR transparent transparent transparent;
+        pointer-events: none;
+      }
+
+      .select-container select:hover {
+        background-color: $COLOR-BRAND;
+        color: white;
+        border-color: $COLOR-BRAND2;
+      }
+
+      .select-container select:focus {
+        border-color: $COLOR-BRAND2;
+        box-shadow: 0 0 10px rgba(0, 45, 78, 0.5);
+      }
+
+      .fa-arrow-left,
+      .fa-arrow-right {
+        color: white;
+        font-size: 2rem;
+        cursor: pointer;
+        margin: 0 20px;
+      }
+
+      .chart-box {
+        position: relative;
+        width: 100%;
+        max-width: 1200px;
+        height: 700px;
+        background-color: #3a3a3a;
+        border: 2px solid black;
+        border-radius: 10px;
+        padding: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .chart-box canvas {
+        width: 100%;
+        height: 100%;
+      }
+
+      #ventasChart,
+      #gastosChart,
+      #lineChart,
+      #utilidadChart {
+        width: 100% !important;
+        height: 100% !important;
+      }
+    }
+  }
+}
+
+.label {
+  color: white;
+}
+
+.filters {
+  gap: 30px;
+  padding: 20px 30px;
+  background-color: $COLOR-BRAND2;
+  /* Color de fondo constante */
+  border: 2px solid $COLOR-BRAND;
+  border-radius: 5px;
+
+  #formFecha {
+    gap: 30px;
+
+    #busquedaFecha {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+
+      div {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+
+        i {
+          cursor: pointer;
+          color: $COLOR-BRAND;
+        }
+      }
+
+      button {
+        width: 120px;
+      }
+    }
+
+
+    p {
+      color: white;
+      font-family: 'Forum', serif;
+      font-size: 26px;
+    }
+  }
+
+  #formBusqueda {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    i {
+      cursor: pointer;
+      color: $COLOR-BRAND;
+
+      &:hover {
+        color: white;
+      }
+    }
+  }
+}
+
+input[type="text"] {
+  padding: 10px 20px;
+  font-size: 16px;
+  color: black;
+  background-color: $COLOR-BRAND2;
+  /* Color de fondo constante */
+  border: 2px solid $COLOR-BRAND;
+  border-radius: 5px;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+input[type="text"]::placeholder {
+  color: $COLOR-BRAND;
+}
+
+// input[type="text"]:hover,
+// input[type="text"]:focus {
+//   background-color: $COLOR-BRAND2;
+//   /* Color de fondo constante */
+//   border-color: $COLOR-BRAND2;
+//   box-shadow: 0 0 10px rgba(0, 45, 78, 0.5);
+// }
+
+#utilidades {
+  #boxUtilidades {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+
+    #utilidades-box {
+      display: flex;
+      flex-direction: column;
+      gap: 30px;
+    }
+  }
+}
+
+#utilidades {
+  background-color: #00101b;
+  padding: 20px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+}
+
+#utilidades .filters {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#utilidades .label {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+#utilidades-container {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 20px;
+}
+
+#utilidades-ventas,
+#utilidades-gastos,
+#utilidades-total {
+  width: 100%;
+  padding: 10px;
+  border-radius: 5px;
+  background-color: #fff;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+}
+
+#utilidades-ventas .label,
+#utilidades-gastos .label,
+#utilidades-total .label {
+  color: #333;
+  margin-bottom: 10px;
+}

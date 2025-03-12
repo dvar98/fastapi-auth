@@ -1,0 +1,45 @@
+main {
+  height: 100vh;
+  justify-content: center;
+}
+main #inicioSesion {
+  width: 400px;
+  gap: 50px;
+  padding: 20px 50px 50px 50px;
+  border-radius: 30px;
+  background-color: #626F78;
+}
+main #inicioSesion #login {
+  width: 100%;
+  gap: 30px;
+}
+main #inicioSesion #login #form {
+  width: 100%;
+  gap: 20px;
+  align-items: stretch;
+  text-align: center;
+}
+main #inicioSesion #login #form .labelForm {
+  width: 100%;
+  color: rgba(255, 255, 255, 0.7);
+  -webkit-text-stroke: 0.5px black;
+  /* Ancho y color del borde */
+}
+main #inicioSesion #login #form .inputForm {
+  width: 100%;
+  font-size: 18px;
+  padding: 10px 25px;
+  border: none;
+  border-radius: 50px;
+  outline: none;
+  transition: all 0.4s ease;
+}
+main #inicioSesion #login #form .inputForm:hover {
+  box-shadow: 0 0 30px #002D4E;
+}
+
+.messageError {
+  color: rgb(137, 0, 0);
+  text-wrap: wrap;
+  font-size: 22px;
+}/*# sourceMappingURL=inicio-sesion.component.css.map */

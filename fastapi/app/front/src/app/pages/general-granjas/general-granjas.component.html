@@ -1,0 +1,46 @@
+<main class="box">
+  <div class="background-image" style="background-image: url(../assets/images/fondo_gallinas.jpg);"></div>
+  <!--Imagen de fondo-->
+
+  <!-- Inicio contenido -->
+  <section>
+    <div id="mainBox" class="box">
+      <app-link-navegacion [paths]="this.path"></app-link-navegacion>
+      <div id="first-container" class="box">
+        <a (click)="arrowBack()" id="arrowBack">
+          <img src="../../../assets/ico/arrow-left.png" alt="">
+        </a>
+        <h1 class="label">Granja {{granja.name}}</h1>
+        <div style="width: 30px;"></div>
+      </div>
+      <img src="../../../assets/images/Granja.png" alt="Imagen Granja">
+      <h2 class="label">RESUMEN POR GALPÓN</h2>
+      <div id="formGalpones" class="box">
+        <div id="ulGranjas" class="box">
+          <div [@fadeInOutFastWidth] id="box-granja" *ngFor="let galpon of this.granja.galpones; index as i">
+            <button [@fadeInOutFastWidth] (click)="option(i)" class="subcontent">{{galpon.name}}</button>
+            <i [@fadeInOut] (click)="this.eliminarGalpon(i)" *ngIf="editMode" class="fa-solid fa-trash"></i>
+          </div>
+          <!-- Buton para crear una nueva granja -->
+          <hr style="width: 100%; border:none; border-top: 0.1px dotted;">
+          <div [@fadeInOutFastHeight] id="box-crearGranja" *ngIf="formGranja">
+            <input [value]="this.nombreSugeridoGalpon" (input)="this.messageAlertNombre=false" class="inputForm"
+              type="text" #nombreGalpon>
+            <span [@fadeInOutFastHeight] *ngIf="this.messageAlertNombre" class="messageError" id="formError">Este galpón
+              ya esta registrado</span>
+            <span [@fadeInOutFastHeight] *ngIf="this.messageAlertVacio" class="messageError" id="formError">Nombre de
+              galpón vacio.</span>
+            <button class="subcontent" (click)="crearGalpon(nombreGalpon.value)">Crear</button>
+            <button class="subcontent" id="btnCancelar" (click)="formGranja = false;">Cancelar</button>
+          </div>
+          <section id="tools">
+            <i *ngIf="!formGranja" (click)="showForm()" class="fa-solid fa-circle-plus"></i>
+            <i (click)="editMode = true" class="fa-solid fa-screwdriver-wrench"></i>
+          </section>
+          <span *ngIf="this.granja.galpones?.length == 0">No hay galpones asignados a esta granja</span>
+        </div>
+      </div>
+    </div>
+    <!-- <app-popup-modal *ngIf="this.chargeIcon"></app-popup-modal> -->
+  </section>
+</main>

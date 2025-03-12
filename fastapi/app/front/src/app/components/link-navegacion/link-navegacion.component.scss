@@ -1,0 +1,9 @@
+#ruta {
+  cursor: pointer;
+  font-size: 18px;
+  text-decoration: underline;
+
+  &:hover {
+    color: blue;
+  }
+}

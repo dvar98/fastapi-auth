@@ -1,0 +1,80 @@
+<main class="box">
+  <div class="background-image" style="background-image: url(../assets/images/fondo_gallinas.jpg);"></div>
+  <!--Imagen de fondo-->
+
+  <!-- Inicio contenido -->
+  <section>
+    <div id="mainBox" class="box">
+      <app-link-navegacion [paths]="this.path"></app-link-navegacion>
+      <div id="first-container">
+        <a (click)="arrowBack()" id="arrowBack">
+          <img src="../../../assets/ico/arrow-left.png" alt="">
+        </a>
+        <div>
+          <img src="../../../assets/ico/Galpon.png" alt="">
+          <h1 class="label">Registros de Ventas</h1>
+        </div>
+        <div style="width: 30px;"></div>
+      </div>
+      <div id="formGranjas" class="box">
+        <div id="ulGranjas" class="box">
+          <section>
+            <label class="labelForm" for="fecha">Fecha</label>
+            <input class="inputForm" type="text" name="fecha" id=""
+              value="{{venta.fecha.toDate() | date:'fullDate':'es'}}" readonly>
+          </section>
+          <section>
+            <label class="labelForm" for="hora">Hora</label>
+            <input class="inputForm" type="text" name="hora" id="" value="{{venta.fecha.toDate() | date:'h:mm a'}}"
+              readonly>
+          </section>
+          <section>
+            <label class="labelForm" for="cliente">Cliente</label>
+            <input class="inputForm" type="text" name="cliente" id="" [value]="this.venta.cliente"
+              (change)="setCliente($event)">
+          </section>
+          <div id="tipo">
+            <table>
+              <tr>
+                <th>Tipo</th>
+                <th>Cantidad</th>
+                <th>Valor Unitario</th>
+                <th>Total</th>
+              </tr>
+              <tr *ngFor="let key of getKeysObject(this.filas)">
+                <!-- Tipo -->
+                <td>{{ key }}</td>
+                <!-- Cantidad -->
+                <td><input class="inputForm" type="number" min="0" value="0" (input)="changeCantidad(key,$event)"></td>
+                <!-- Valor Unitario -->
+                <td><input class="inputForm" type="text" value="$0"
+                    (input)="formatCurrency($event); changeValorUnitario(key,$event)"></td>
+                <!-- Total -->
+                <td><input class="inputForm" type="text" value="{{moneyFormat(filas[key].total())}}" readonly>
+                </td>
+              </tr>
+              <tr *ngFor="let item of items; let i = index">
+                <td>
+                  <input type="text" class="inputForm" placeholder="Ingrese el tipo" #key
+                    (change)="this.selectTipo($event)">
+                </td>
+                <td><input class="inputForm" type="number" min="0" (input)="changeCantidad(key.value,$event)"></td>
+                <td><input class="inputForm" type="text"
+                    (input)="formatCurrency($event); changeValorUnitario(key.value,$event)"></td>
+                <td><input class="inputForm" type="text" value="{{moneyFormat(filas[key.value].total())}}" readonly>
+                </td>
+              </tr>
+              <tr>
+                <td colspan="4">
+                  <i id="addButtom" (click)="addInitialRow()" class="fa-solid fa-circle-plus"></i>
+                </td>
+              </tr>
+            </table>
+          </div>
+          <h2>Total Venta: {{moneyFormat(venta.totalVenta)}}</h2>
+        </div>
+        <button class="content-desktop" (click)="crearVenta()">Registrar</button>
+      </div>
+    </div>
+  </section>
+</main>

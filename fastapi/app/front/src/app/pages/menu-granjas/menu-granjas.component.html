@@ -1,0 +1,58 @@
+<main class="box">
+  <div class="background-image" style="background-image: url(../assets/images/fondo_gallinas.jpg);"></div>
+  <!--Imagen de fondo-->
+
+  <!-- Inicio contenido -->
+  <section>
+    <div id="mainBox" class="box">
+      <app-link-navegacion [paths]="this.path"></app-link-navegacion>
+      <div id="first-container">
+        <a (click)="arrowBack()" id="arrowBack">
+          <img src="../../../assets/ico/arrow-left.png" alt="">
+        </a>
+        <div>
+          <h1 class="label">Bienvenido,<br>{{this.nameUser}}</h1>
+          <img (click)="navigateUpload()" src="../../../assets/ico/Galpon.png" alt="">
+        </div>
+        <div style="width: 40px;"></div>
+      </div>
+      <div [@fadeInOut] id="formGranjas" class="box">
+        <h1 class="label">SELECCIONE UNA GRANJA</h1>
+        <div [@fadeInOutFastWidth] id="ulGranjas" class="box">
+
+          <!-- Lista de granjas disponibles del usuario -->
+          <div [@fadeInOutFastWidth] id="box-granja" *ngFor="let granja of this.granjas; index as i">
+            <button [@fadeInOutFastWidth] (click)="option(i)" class="subcontent">{{granja.name}}</button>
+            <i [@fadeInOut] (click)="this.eliminarGranja(i)" *ngIf="editMode" class="fa-solid fa-trash"></i>
+          </div>
+
+          <!-- Crear una nueva granja -->
+          <hr style="width: 100%; border:none; border-top: 0.1px dotted;">
+          <div [@fadeInOutFastHeight] id="box-crearGranja" *ngIf="formGranja">
+
+            <!-- NOMBRE DE LA GRANJA -->
+            <input (input)="this.messageAlertNombre=false; this.messageAlertVacio=false;" class="inputForm" type="text"
+              placeholder="Nombre de la granja" #nombreGranja>
+
+            <!-- ALERTA: Nombre de granja ya existe -->
+            <span [@fadeInOutFastHeight] *ngIf="this.messageAlertNombre" class="messageError" id="formError">Esta granja
+              ya esta registrada</span>
+            <!-- ALERTA: Input de nombre vacio -->
+            <span [@fadeInOutFastHeight] *ngIf="this.messageAlertVacio" class="messageError" id="formError">Nombre de
+              granja vacio</span>
+
+            <button class="subcontent" (click)="crearGranja(nombreGranja.value)">Crear</button>
+            <button class="subcontent" id="btnCancelar" (click)="formGranja = false;">Cancelar</button>
+          </div>
+
+          <!-- Iconos agregar y modificar (tools) -->
+          <section id="tools">
+            <i *ngIf="!formGranja" (click)="formGranja = true;" class="fa-solid fa-circle-plus"></i>
+            <i (click)="editMode = !editMode" class="fa-solid fa-screwdriver-wrench"></i>
+          </section>
+
+        </div>
+      </div>
+    </div>
+  </section>
+</main>

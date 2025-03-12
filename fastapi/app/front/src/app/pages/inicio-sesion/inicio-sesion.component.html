@@ -1,0 +1,28 @@
+<main class="box">
+  <div class="background-image" style="background-image: url(../assets/images/fondo_gallinas.jpg);"></div>
+  <!-- Contenido del main -->
+
+
+  <section id="inicioSesion" class="box">
+    <div id="login" class="box">
+      <img src="../assets/ico/userIco.svg" alt="">
+      <div [@fadeInOut] id="form" class="box">
+        <label for="user" class="label labelForm">USUARIO</label>
+        <input class="inputForm messageError" type="email" id="email" name="user" autocomplete="email" #inputUser>
+        <span *ngIf="messageError" [@fadeInOutFast] class="messageError" id="emailError">Por favor, ingresa una
+          dirección de correo electrónico
+          válida.</span>
+
+        <label for="constrasena" class="label labelForm">CONTRASEÑA</label>
+        <input name="constrasena" type="password" class="inputForm" #inputContrasena>
+        <span *ngIf="messageErrorForm" [@fadeInOutFast] class="messageError" id="formError">Correo o contraseña
+          incorrecctos</span>
+        <span *ngIf="messageErrorNetwork" [@fadeInOutFast] class="messageError" id="formError">Tenemos problemas con su
+          conexión a internet. Intentelo de nuevo.</span>
+      </div>
+    </div>
+    <button class="subcontent" (click)="login(inputUser.value,inputContrasena.value)">INICIAR SESIÓN</button>
+  </section>
+
+  <app-popup-modal *ngIf="this.chargeIcon"></app-popup-modal>
+</main>
