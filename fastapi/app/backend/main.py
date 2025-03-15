@@ -31,6 +31,26 @@ User.auth = Relationship(back_populates="user")
 UserAuth.user = Relationship(back_populates="auth")
 
 
+class Granja(SQLModel, table=True):
+    id: int = Field(default=None,
+                    sa_column=Column(Integer, primary_key=True, index=True, autoincrement=True))
+    nombre: str = Field(sa_column=Column(String, nullable=False))
+    user_id: int = Field(foreign_key="user.id")
+
+
+Granja.user = Relationship(back_populates="user")
+
+
+class Galpon(SQLModel, table=True):
+    id: int = Field(default=None,
+                    sa_column=Column(Integer, primary_key=True, index=True, autoincrement=True))
+    nombre: str = Field(sa_column=Column(String, nullable=False))
+    granja_id: int = Field(foreign_key="granja.id")
+
+
+Galpon.granja = Relationship(back_populates="granja")
+
+
 class ProductoVentaLink(SQLModel, table=True):
     id: int = Field(default=None,
                     sa_column=Column(Integer, primary_key=True, index=True, autoincrement=True))
@@ -46,6 +66,27 @@ class Venta(SQLModel, table=True):
     user_id: int = Field(foreign_key="user.id")
     productos: List["Producto"] = Relationship(
         back_populates="ventas", link_model=ProductoVentaLink)
+    galpon_id: int = Field(foreign_key="galpon.id")
+
+
+Venta.galpon = Relationship(back_populates="galpon")
+
+
+class Gasto(SQLModel, table=True):
+    id: int = Field(default=None,
+                    sa_column=Column(Integer, primary_key=True, index=True, autoincrement=True))
+    fecha: str = Field(sa_column=Column(String, nullable=False))
+    concepto: str = Field(sa_column=Column(String, nullable=False))
+    categoria: str = Field(sa_column=Column(String, nullable=False))
+    valorUnitario: float = Field(sa_column=Column(Integer, nullable=False))
+    cantidad: int = Field(sa_column=Column(Integer, nullable=False))
+    total: float = Field(sa_column=Column(Integer, nullable=False))
+    user_id: int = Field(foreign_key="user.id")
+    galpon_id: int = Field(foreign_key="galpon.id")
+
+
+Gasto.user = Relationship(back_populates="user")
+Gasto.galpon = Relationship(back_populates="galpon")
 
 
 class Producto(SQLModel, table=True):
@@ -189,6 +230,76 @@ def delete_user(user_id: int, session: SessionDep):
     return {"ok": True}
 
 
+# Granjas
+
+@app.post("/{user_id}/granjas/create/{granja_name}")
+def create_granja(user_id: int, granja_name: str, session: SessionDep):
+    granja = Granja(nombre=granja_name, user_id=user_id)
+    session.add(granja)
+    session.commit()
+    session.refresh(granja)
+    return granja
+
+
+@app.get("/granjas/")
+def read_granjas(session: SessionDep, offset: int = 0, limit: Annotated[int, Query(le=100)] = 100,) -> list[Granja]:
+    granjas = session.exec(
+        select(Granja).offset(offset).limit(limit)).all()
+    return granjas
+
+
+@app.get("/{user_id}/granjas/")
+def read_granjas_by_user(user_id: int, session: SessionDep):
+    granjas = session.exec(select(Granja).where(
+        Granja.user_id == user_id)).all()
+    return granjas
+
+
+@app.delete("/granjas/{granja_id}")
+def delete_granja(granja_id: int, session: SessionDep):
+    granja = session.get(granja, granja_id)
+    if not granja:
+        raise HTTPException(status_code=404, detail="granja not found")
+    session.delete(granja)
+    session.commit()
+    return {"ok": True}
+
+
+# Galpones
+
+@app.post("/{granja_id}/galpones/create/{galpon_name}")
+def create_galpon(granja_id: int, galpon_name: str, session: SessionDep):
+    galpon = Galpon(nombre=galpon_name, granja_id=granja_id)
+    session.add(galpon)
+    session.commit()
+    session.refresh(galpon)
+    return galpon
+
+
+@app.get("/galpones/")
+def read_galpones(session: SessionDep, offset: int = 0, limit: Annotated[int, Query(le=100)] = 100,) -> list[Galpon]:
+    galpones = session.exec(
+        select(Galpon).offset(offset).limit(limit)).all()
+    return galpones
+
+
+@app.get("/{granja_id}/galpones/")
+def read_galpones_by_granja(granja_id: int, session: SessionDep):
+    galpones = session.exec(select(Galpon).where(
+        Galpon.granja_id == granja_id)).all()
+    return galpones
+
+
+@app.delete("/galpones/{galpon_id}")
+def delete_galpon(galpon_id: int, session: SessionDep):
+    galpon = session.get(Galpon, galpon_id)
+    if not galpon:
+        raise HTTPException(status_code=404, detail="Galpon not found")
+    session.delete(galpon)
+    session.commit()
+    return {"ok": True}
+
+
 @app.get("/productos/")
 def read_productos(
     session: SessionDep,
@@ -242,12 +353,13 @@ def delete_product(producto_id: int, session: SessionDep):
 
 
 class VentaCreate(BaseModel):
+    user_id: int
     fecha: str
     productos: List[int]
 
 
-@app.post("{user_id}/ventas/create/")
-def create_venta(user_id: str, venta: VentaCreate, session: SessionDep):
+@app.post("/{galpon_id}/ventas/create/")
+def create_venta(galpon_id: str, venta: VentaCreate, session: SessionDep):
     # Calcular total
     totalVenta = 0
     for producto_id in venta.productos:
@@ -255,7 +367,7 @@ def create_venta(user_id: str, venta: VentaCreate, session: SessionDep):
         totalVenta += producto.precio
     # Crear la venta
     venta_db = Venta(fecha=venta.fecha, total=totalVenta,
-                     user_id=user_id)
+                     user_id=venta.user_id, galpon_id=galpon_id)
     session.add(venta_db)
     session.commit()
     session.refresh(venta_db)
@@ -285,9 +397,67 @@ def read_ventas_by_user(user_id: int, session: SessionDep):
     return ventas
 
 
+@app.get("/{galpon_id}/ventas/")
+def read_ventas_by_galpon(galpon_id: int, session: SessionDep):
+    ventas = session.exec(select(Venta).where(
+        Venta.galpon_id == galpon_id)).all()
+    return ventas
+
+
 @app.get("/ventas/{venta_id}")
 def read_venta(venta_id: int, session: SessionDep) -> Venta:
     venta = session.get(Venta, venta_id)
     if not venta:
         raise HTTPException(status_code=404, detail="Venta not found")
     return venta
+
+
+class GastoCreate(BaseModel):
+    user_id: int
+    fecha: str
+    concepto: str
+    categoria: str
+    valorUnitario: float
+    cantidad: int
+
+
+@app.post("/{galpon_id}/gastos/create/")
+def create_gasto(galpon_id: int, gasto: GastoCreate, session: SessionDep):
+    gasto_db = Gasto(**gasto.model_dump(), total=gasto.cantidad *
+                     gasto.valorUnitario, galpon_id=galpon_id)
+    session.add(gasto_db)
+    session.commit()
+    session.refresh(gasto_db)
+    return gasto_db
+
+
+@app.get("/{user_id}/gastos/")
+def read_gastos_by_user(user_id: int, session: SessionDep):
+    gastos = session.exec(select(Gasto).where(
+        Gasto.user_id == user_id)).all()
+    return gastos
+
+
+@app.get("/{galpon_id}/gastos/")
+def read_gastos_by_galpon(galpon_id: int, session: SessionDep):
+    gastos = session.exec(select(Gasto).where(
+        Gasto.galpon_id == galpon_id)).all()
+    return gastos
+
+
+@app.get("/gastos/{gasto_id}")
+def read_gasto(gasto_id: int, session: SessionDep) -> Gasto:
+    gasto = session.get(Gasto, gasto_id)
+    if not gasto:
+        raise HTTPException(status_code=404, detail="Gasto not found")
+    return gasto
+
+
+@app.delete("/{user_id}/gastos/{gasto_id}")
+def delete_gasto(gasto_id: int, session: SessionDep):
+    gasto = session.get(Gasto, gasto_id)
+    if not gasto:
+        raise HTTPException(status_code=404, detail="Gasto not found")
+    session.delete(gasto)
+    session.commit()
+    return {"ok": True}
