@@ -29,7 +29,7 @@ import { trigger, transition, style, animate } from '@angular/animations';
 })
 export class VisualizacionDatosComponent implements OnInit {
   granjaSeleccionada: any = { name: '', path: '' };
-  galpon: Galpon = { name: '', ref: '', consecutivoVentas: 0, consecutivoGastos: 0, ventasTotales: 0, gastosTotales: 0, ventas: [], gastos: [] };
+  galpon: Galpon = { id: '', name: '', consecutivoVentas: 0, consecutivoGastos: 0, ventasTotales: 0, gastosTotales: 0, ventas: [], gastos: [] };
   ventasGalpon: Ventas[] = [];
   gastosGalpon: Gastos[] = [];
 
@@ -102,8 +102,8 @@ export class VisualizacionDatosComponent implements OnInit {
       if (!isLogged) {
         // this.router.navigate(['/']);
       } else {
-        const refGranja = this.granjaService.getGranjaSeleccionada()?.path.split('/').pop();
-        const refGalpon = this.galponService.getGalpon()?.ref.split('/').pop();
+        const refGranja = this.granjaService.getGranjaSeleccionada().name;
+        const refGalpon = this.galponService.getGalpon().name;
         if (refGranja && refGalpon) {
           this.path = [
             { name: 'granjas', path: 'menu-granjas' },
@@ -117,13 +117,17 @@ export class VisualizacionDatosComponent implements OnInit {
 
         this.chargeIco = true;
         // Descargar los datos del galpón seleccionado
-        await this.galponService.datosGalponSeleccionado();
+        await this.galponService.basicDataGalponSeleccionado();
+        await this.galponService.ventasGalpon(0, 10);
+        await this.galponService.gastosGalpon(0, 10).then((gastos) => {
+          this.gastosGalpon = gastos;
+        });
         this.galpon = this.galponService.getGalpon();
 
         // Ventas
         this.ventasGalpon = this.galpon?.ventas ?? [];
         // organizar ventasGalpon por fecha
-        this.ventasGalpon.sort((a, b) => a.id - b.id);
+        this.ventasGalpon.sort((a, b) => (a.id ?? 0) - (b.id ?? 0));
 
         // Dividir en grupos de 5
         for (let i = 0; i < this.ventasGalpon.length; i += 5) {
@@ -131,9 +135,9 @@ export class VisualizacionDatosComponent implements OnInit {
           this.ventasGalponGrupo.push(grupo);
         }
 
-        this.gastosGalpon = this.galpon?.gastos ?? [];
+        // this.gastosGalpon = this.galpon?.gastos ?? [];
         // organizar gastosGalpon por fecha
-        this.gastosGalpon.sort((a, b) => a.id - b.id);
+        this.gastosGalpon.sort((a, b) => a.fecha && b.fecha ? a.fecha.getTime() - b.fecha.getTime() : 0);
 
         // dividir en grupos de 5
         for (let i = 0; i < this.gastosGalpon.length; i += 5) {
@@ -342,20 +346,20 @@ export class VisualizacionDatosComponent implements OnInit {
     const ventas = this.galpon.ventas ?? [];
     const gastos = this.galpon.gastos ?? [];
 
-    const fechasVentas = ventas.map(v => v.fecha.toDate().getTime());
-    const fechasGastos = gastos.map(g => g.fecha.toDate().getTime());
+    const fechasVentas = ventas.map(v => v.fecha ? v.fecha.getTime() : 0).filter(time => time !== 0);
+    const fechasGastos = gastos.map(g => g.fecha ? g.fecha.getTime() : 0).filter(time => time !== 0);
     const todasLasFechas = [...new Set([...fechasVentas, ...fechasGastos])].sort((a, b) => a - b);
 
     const fechasFormato = todasLasFechas.map(ms => new Date(ms).toLocaleDateString('es'));
 
     const ventasData = todasLasFechas.map(date => {
-      const total = ventas.filter(v => v.fecha.toDate().getTime() === date)
+      const total = ventas.filter(v => v.fecha && v.fecha.getTime() === date)
         .reduce((sum, curr) => sum + curr.totalVenta, 0);
       return total;
     });
 
     const gastosData = todasLasFechas.map(date => {
-      const total = gastos.filter(g => g.fecha.toDate().getTime() === date)
+      const total = gastos.filter(g => g.fecha && g.fecha.getTime() === date)
         .reduce((sum, curr) => sum + curr.total, 0);
       return total;
     });
@@ -438,14 +442,14 @@ export class VisualizacionDatosComponent implements OnInit {
       this.utilidadChart.destroy();
     }
 
-    const fechasVentas = this.galpon.ventas?.map(v => v.fecha.toDate().getTime()) ?? [];
-    const fechasGastos = this.galpon.gastos?.map(g => g.fecha.toDate().getTime()) ?? [];
+    const fechasVentas = this.galpon.ventas?.map(v => v.fecha ? v.fecha.getTime() : 0) ?? [];
+    const fechasGastos = this.galpon.gastos?.map(g => g.fecha ? g.fecha.getTime() : 0) ?? [];
     const todasLasFechas = [...new Set([...(fechasVentas || []), ...(fechasGastos || [])])].sort((a, b) => a - b);
 
     const utilidadData = todasLasFechas.map(date => {
-      const totalVentas = this.galpon.ventas?.filter(v => v.fecha.toDate().getTime() === date)
+      const totalVentas = this.galpon.ventas?.filter(v => v.fecha && v.fecha.getTime() === date)
         .reduce((sum, curr) => sum + curr.totalVenta, 0) ?? 0;
-      const totalGastos = this.galpon.gastos?.filter(g => g.fecha.toDate().getTime() === date)
+      const totalGastos = this.galpon.gastos?.filter(g => g.fecha && g.fecha.getTime() === date)
         .reduce((sum, curr) => sum + curr.total, 0) ?? 0;
       return totalVentas - totalGastos;
     });
@@ -564,7 +568,7 @@ export class VisualizacionDatosComponent implements OnInit {
 
   agruparVentasPorTipo(ventas: Ventas[]): any[] {
     const agrupados = ventas.reduce((acum: any, venta: Ventas) => {
-      venta.detalle.forEach((item: any) => {
+      venta.productos.forEach((item: any) => {
         const tipoNormalizado = item.tipo.trim().toLowerCase(); // Normaliza el tipo para evitar duplicados por errores de formato
         if (!acum[tipoNormalizado]) {
           acum[tipoNormalizado] = { tipo: item.tipo, cantidad: 0 };
@@ -581,7 +585,7 @@ export class VisualizacionDatosComponent implements OnInit {
 
   agruparPor(key: string) {
     return (acumulador: any[], valorActual: Ventas) => {
-      let fecha = new Date(valorActual.fecha.toDate());
+      let fecha = new Date(valorActual.fecha ? valorActual.fecha : 0);
       let grupo = this.determinarGrupo(fecha, key);
       let grupoExistente = acumulador.find(g => g.fecha === grupo);
       if (grupoExistente) {
@@ -637,9 +641,9 @@ export class VisualizacionDatosComponent implements OnInit {
     const query = input.value.toLowerCase();
     this.ventasFiltradas = this.ventasGalponGrupo.map(grupo =>
       grupo.filter((venta: Ventas) =>
-        venta.id.toString().includes(query) ||
+        (venta.id && venta.id.toString().includes(query)) ||
         venta.cliente.toLowerCase().includes(query) ||
-        venta.detalle.some((detalle: any) => detalle.tipo.toLowerCase().includes(query))
+        venta.productos.some((detalle: any) => detalle.tipo.toLowerCase().includes(query))
       )
     ).filter(grupo => grupo.length > 0);
     this.currentPageVentas = 0; // Reiniciar la paginación
@@ -650,7 +654,7 @@ export class VisualizacionDatosComponent implements OnInit {
     const query = input.value.toLowerCase();
     this.gastosFiltrados = this.gastosGalponGrupo.map(grupo =>
       grupo.filter((gasto: Gastos) =>
-        gasto.id.toString().includes(query) ||
+        (gasto.id && gasto.id.toString().includes(query)) ||
         gasto.categoria.toLowerCase().includes(query)
       )
     ).filter(grupo => grupo.length > 0);
@@ -665,7 +669,7 @@ export class VisualizacionDatosComponent implements OnInit {
     } else {
       this.ventasFiltradas = this.ventasGalponGrupo.map(grupo =>
         grupo.filter((venta: Ventas) => {
-          const ventaFecha = new Date(venta.fecha.toDate());
+          const ventaFecha = new Date(venta.fecha ? venta.fecha : 0);
           return ventaFecha >= start && ventaFecha <= end;
         })
       ).filter(grupo => grupo.length > 0);
@@ -729,7 +733,7 @@ export class VisualizacionDatosComponent implements OnInit {
 
     this.ventasFiltradas = this.ventasGalponGrupo.map(grupo =>
       grupo.filter((venta: Ventas) =>
-        venta.fecha.toDate().setHours(0, 0, 0, 0) === fechaInput.setHours(0, 0, 0, 0)
+        venta.fecha && venta.fecha.setHours(0, 0, 0, 0) === fechaInput.setHours(0, 0, 0, 0)
       )).filter(grupo => grupo.length > 0);
     this.currentPageVentas = 0; // Reiniciar la paginación
   }
@@ -740,7 +744,7 @@ export class VisualizacionDatosComponent implements OnInit {
 
     this.gastosFiltrados = this.gastosGalponGrupo.map(grupo =>
       grupo.filter((gasto: Gastos) =>
-        gasto.fecha.toDate().setHours(0, 0, 0, 0) === fechaInput.setHours(0, 0, 0, 0)
+        gasto.fecha && gasto.fecha.setHours(0, 0, 0, 0) === fechaInput.setHours(0, 0, 0, 0)
       )).filter(grupo => grupo.length > 0);
     this.currentPageGastos = 0; // Reiniciar la paginación
   }
@@ -761,11 +765,14 @@ export class VisualizacionDatosComponent implements OnInit {
       // Lógica de ordenamiento para la sección de ventas
       if (columna === 'fecha') {
         this.ventasGalpon.sort((a, b) => {
-          if (orden === 'asc') {
-            return a.fecha.toDate().getTime() - b.fecha.toDate().getTime();
-          } else {
-            return b.fecha.toDate().getTime() - a.fecha.toDate().getTime();
+          if (a.fecha && b.fecha) {
+            if (orden === 'asc') {
+              return a.fecha.getTime() - b.fecha.getTime();
+            } else {
+              return b.fecha.getTime() - a.fecha.getTime();
+            }
           }
+          return 0; // Default return value if dates are not defined
         });
       } else if (columna === 'total') {
         this.ventasGalpon.sort((a, b) => {
@@ -787,11 +794,14 @@ export class VisualizacionDatosComponent implements OnInit {
       // Lógica de ordenamiento para la sección de gastos
       if (columna === 'fecha') {
         this.gastosGalpon.sort((a, b) => {
-          if (orden === 'asc') {
-            return a.fecha.toDate().getTime() - b.fecha.toDate().getTime();
-          } else {
-            return b.fecha.toDate().getTime() - a.fecha.toDate().getTime();
+          if (a.fecha && b.fecha) {
+            if (orden === 'asc') {
+              return a.fecha.getTime() - b.fecha.getTime();
+            } else {
+              return b.fecha.getTime() - a.fecha.getTime();
+            }
           }
+          return 0; // Default return value if dates are not defined
         });
       } else if (columna === 'total') {
         this.gastosGalpon.sort((a, b) => {

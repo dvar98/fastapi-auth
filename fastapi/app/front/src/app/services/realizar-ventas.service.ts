@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import Ventas from '../interfaces/ventas.interface';
 import { GalponDataService } from './galpon-data.service';
-import { GetDataFirebaseService } from './get-data-firebase.service';
+import { HttpClient } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root'
@@ -10,7 +10,7 @@ export class RealizarVentasService {
 
   constructor(
     private galponDataService: GalponDataService,
-    private getDataFirebase: GetDataFirebaseService
+    private http: HttpClient
   ) { }
 
   // Método para registrar una venta
@@ -28,14 +28,27 @@ export class RealizarVentasService {
   // Realiza la ejecucion de los update para todos los documentos de ventas pendientes por subir. (No internet conection) - POR DESARROLLAR
   async updateVenta(venta: Ventas) {
     const galpon = this.galponDataService.getGalpon();
-    galpon.consecutivoVentas++;
-    const refColeccionGalpon = galpon.ref + '/ventas';
-    await this.getDataFirebase.createDoc(refColeccionGalpon, venta, venta.id.toString());
-    if (galpon.ventasTotales) {
-      galpon.ventasTotales += venta.totalVenta;
-    } else {
-      galpon.ventasTotales = venta.totalVenta;
+    if (!galpon.consecutivoVentas) {
+      galpon.consecutivoVentas = 0;
     }
-    await this.getDataFirebase.updateDoc(galpon.ref, { ventasTotales: galpon.ventasTotales, consecutivoVentas: galpon.consecutivoVentas });
+    galpon.consecutivoVentas++;
+    if (!galpon.ventasTotales) {
+      galpon.ventasTotales = 0;
+    }
+    galpon.ventasTotales += venta.totalVenta;
+
+    return this.http.post(`http://localhost:8000/galpones/${galpon.id}/ventas`, venta)
+      .toPromise()
+      .then((response: any) => {
+        return response + this.updateGalpon(galpon);
+      });
+  }
+
+  async updateGalpon(galpon: any) {
+    return await this.http.put(`http://localhost:8000/galpones/${galpon.id}`, galpon)
+      .toPromise()
+      .then((response: any) => {
+        return response;
+      });
   }
 }

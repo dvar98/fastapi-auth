@@ -30,7 +30,10 @@ import { trigger, transition, style, animate } from '@angular/animations';
 })
 export class InicioSesionComponent {
 
-  constructor(private userAuthService: UserAuthService) { }
+  constructor(
+    private userAuthService: UserAuthService,
+    private router: Router
+  ) { }
 
   messageError: boolean = false;
   messageErrorForm: boolean = false;
@@ -49,15 +52,9 @@ export class InicioSesionComponent {
     }
 
     this.chargeIcon = true;
-    this.userAuthService.login(email, password).then((error?: any) => {
+    this.userAuthService.login(email, password).then((response) => {
       this.chargeIcon = false;
-      if (error) {
-        if (error.code == "auth/network-request-failed") {
-          this.messageErrorNetwork = true;
-        } else {
-          this.messageErrorForm = this.userAuthService.isLoggedIn;
-        }
-      }
+      this.router.navigate(['/menu-granjas']);
     })
   }
 

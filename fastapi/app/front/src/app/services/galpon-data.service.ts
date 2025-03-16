@@ -1,54 +1,46 @@
 import { Injectable } from '@angular/core';
-import { GetDataFirebaseService } from './get-data-firebase.service';
 import { GranjaDataService } from './granja-data.service';
 import Galpon from '../interfaces/galpon.interface';
+import { HttpClient } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root'
 })
 export class GalponDataService {
-  private galponSeleccionado: Galpon = { name: '', ref: '', consecutivoVentas: 0, consecutivoGastos: 0, ventas: [], gastos: [], inventario: [] };
+  private galponSeleccionado: Galpon = { id: '', name: '' };
 
   constructor(
     private granjaService: GranjaDataService,
-    private getDataFirebase: GetDataFirebaseService) {
-  }
+    private http: HttpClient
+  ) { }
 
-  setIndexGalpon(index: number) {
+  setIndexGalpon(id: string) {
     const galpones = this.granjaService.getGranjaSeleccionada().galpones //galpones de la granja seleccionada
-    this.galponSeleccionado = galpones ? galpones[index] : { name: '', ref: '', consecutivoVentas: 0, consecutivoGastos: 0, ventas: [], gastos: [], inventario: [] };
+    this.galponSeleccionado = galpones ? galpones[id] : { name: '', id: '' };
   }
 
-  async datosGalponSeleccionado() {
-    // Ventas del galpón
-    await this.getDataFirebase.getCollectionDocs(`${this.galponSeleccionado.ref}/ventas`).then(async (ventasGalpon: any[]) => {
-      for (let i = 0; i < ventasGalpon.length; i++) {
-        await this.getDataFirebase.getDocByReference(ventasGalpon[i].ref).then((venta) => {
-          ventasGalpon[i] = {
-            ...venta.data()
-          }
-        });
-      }
-      this.galponSeleccionado = {
-        ...this.galponSeleccionado,
-        ventas: ventasGalpon,
-      }
-    });
+  async basicDataGalponSeleccionado() {
+    return this.http.get(`http://localhost:8000/galpones/${this.galponSeleccionado.id} `)
+      .toPromise()
+      .then((response: any) => {
+        this.galponSeleccionado = response as Galpon;
+      });
+  }
 
-    // Gastos de cada galpón
-    await this.getDataFirebase.getCollectionDocs(`${this.galponSeleccionado.ref}/gastos`).then(async (gastosGalpon: any[]) => {
-      for (let i = 0; i < gastosGalpon.length; i++) {
-        await this.getDataFirebase.getDocByReference(gastosGalpon[i].ref).then((gasto) => {
-          gastosGalpon[i] = {
-            ...gasto.data()
-          }
-        });
-      }
-      this.galponSeleccionado = {
-        ...this.galponSeleccionado,
-        gastos: gastosGalpon,
-      }
-    });
+  async ventasGalpon(offset: number, limit: number) {
+    return this.http.get(`http://localhost:8000/galpones/${this.galponSeleccionado.id}/ventas?offset=${offset}&limit=${limit}`)
+      .toPromise()
+      .then((response: any) => {
+        return response;
+      });
+  }
+
+  async gastosGalpon(offset: number, limit: number) {
+    return this.http.get(`http://localhost:8000/galpones/${this.galponSeleccionado.id}/gastos?offset=${offset}&limit=${limit}`)
+      .toPromise()
+      .then((response: any) => {
+        return response;
+      });
   }
 
   getGalpon(): Galpon {

@@ -20,11 +20,11 @@ import localeEs from '@angular/common/locales/es';
 import { NgxChartsModule } from '@swimlane/ngx-charts';
 import { FormsModule } from '@angular/forms';
 import { environment } from '../environments/environment';
-import { UploadDataComponent } from './pages/upload-data/upload-data.component';
 import { AgregarUsuarioComponent } from './pages/agregar-usuario/agregar-usuario.component';
 import { PopupModalComponent } from './components/popup-modal/popup-modal.component';
 import { LinkNavegacionComponent } from './components/link-navegacion/link-navegacion.component';
 import { VentasComponent } from './pages/ventas/ventas.component';
+import { HttpClientModule } from '@angular/common/http';
 
 
 registerLocaleData(localeEs, 'es');
@@ -41,7 +41,6 @@ registerLocaleData(localeEs, 'es');
     VisualizacionDatosComponent,
     VentasComponent,
     GastosComponent,
-    UploadDataComponent,
     AgregarUsuarioComponent,
     PopupModalComponent,
     LinkNavegacionComponent,
@@ -55,7 +54,8 @@ registerLocaleData(localeEs, 'es');
     provideFirestore(() => getFirestore()),
     NgxChartsModule,
     FormsModule,
-    AngularFireModule.initializeApp(environment.firebase)
+    AngularFireModule.initializeApp(environment.firebase),
+    HttpClientModule,
   ],
   providers: [
     { provide: LOCALE_ID, useValue: 'es' }

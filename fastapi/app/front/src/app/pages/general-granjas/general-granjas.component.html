@@ -17,7 +17,7 @@
       <h2 class="label">RESUMEN POR GALPÓN</h2>
       <div id="formGalpones" class="box">
         <div id="ulGranjas" class="box">
-          <div [@fadeInOutFastWidth] id="box-granja" *ngFor="let galpon of this.granja.galpones; index as i">
+          <div [@fadeInOutFastWidth] id="box-granja" *ngFor="let galpon of getValuesDict(this.granja.galpones); index as i">
             <button [@fadeInOutFastWidth] (click)="option(i)" class="subcontent">{{galpon.name}}</button>
             <i [@fadeInOut] (click)="this.eliminarGalpon(i)" *ngIf="editMode" class="fa-solid fa-trash"></i>
           </div>
@@ -37,7 +37,7 @@
             <i *ngIf="!formGranja" (click)="showForm()" class="fa-solid fa-circle-plus"></i>
             <i (click)="editMode = true" class="fa-solid fa-screwdriver-wrench"></i>
           </section>
-          <span *ngIf="this.granja.galpones?.length == 0">No hay galpones asignados a esta granja</span>
+          <span *ngIf="getValuesDict(this.granja.galpones).length == 0">No hay galpones asignados a esta granja</span>
         </div>
       </div>
     </div>

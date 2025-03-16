@@ -1,6 +1,5 @@
 import { formatCurrency } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { Timestamp } from '@angular/fire/firestore';
 import { Router } from '@angular/router';
 import Gastos from 'src/app/interfaces/gastos.interface';
 import { GalponDataService } from 'src/app/services/galpon-data.service';
@@ -33,8 +32,8 @@ export class GastosComponent implements OnInit {
       }
     })
 
-    const refGranja = this.granjaService.getGranjaSeleccionada().path.split('/').pop();
-    const refGalpon = this.galponService.getGalpon().ref.split('/').pop();
+    const refGranja = this.granjaService.getGranjaSeleccionada().name;
+    const refGalpon = this.galponService.getGalpon().name;
     if (refGranja && refGalpon) {
       this.path = [
         { name: 'granjas', path: 'menu-granjas' },
@@ -45,12 +44,11 @@ export class GastosComponent implements OnInit {
       ];
     }
 
-    this.consecutivoGastos = this.galponService.getGalpon().consecutivoGastos;
+    this.consecutivoGastos = this.galponService.getGalpon().consecutivoGastos ?? 0;
   }
 
   gasto: Gastos = {
-    id: 0,
-    fecha: Timestamp.now(),
+    consecutivo: 0,
     concepto: '',
     categoria: '',
     cantidad: 0,
@@ -65,7 +63,7 @@ export class GastosComponent implements OnInit {
       return;
     }
 
-    this.gasto.id = this.consecutivoGastos;
+    this.gasto.consecutivo = this.consecutivoGastos;
     await this.gastoService.registrarGasto(this.gasto);
     alert('Gasto registrada con éxito');
     this.arrowBack();

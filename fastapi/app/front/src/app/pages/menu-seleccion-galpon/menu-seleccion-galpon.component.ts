@@ -27,8 +27,8 @@ export class MenuSeleccionGalponComponent implements OnInit {
       }
     })
 
-    const refGranja = this.granjaService.getGranjaSeleccionada().path.split('/').pop();
-    const refGalpon = this.galponService.getGalpon().ref.split('/').pop();
+    const refGranja = this.granjaService.getGranjaSeleccionada().name;
+    const refGalpon = this.galponService.getGalpon().name;
     if (refGranja && refGalpon) {
       this.path = [
         { name: 'granjas', path: 'menu-granjas' },

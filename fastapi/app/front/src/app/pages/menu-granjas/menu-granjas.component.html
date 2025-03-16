@@ -11,7 +11,7 @@
           <img src="../../../assets/ico/arrow-left.png" alt="">
         </a>
         <div>
-          <h1 class="label">Bienvenido,<br>{{this.nameUser}}</h1>
+          <h1 class="label">Bienvenido,<br>{{this.user.name}}</h1>
           <img (click)="navigateUpload()" src="../../../assets/ico/Galpon.png" alt="">
         </div>
         <div style="width: 40px;"></div>
@@ -21,7 +21,7 @@
         <div [@fadeInOutFastWidth] id="ulGranjas" class="box">
 
           <!-- Lista de granjas disponibles del usuario -->
-          <div [@fadeInOutFastWidth] id="box-granja" *ngFor="let granja of this.granjas; index as i">
+          <div [@fadeInOutFastWidth] id="box-granja" *ngFor="let granja of getValuesDict(this.granjas); index as i">
             <button [@fadeInOutFastWidth] (click)="option(i)" class="subcontent">{{granja.name}}</button>
             <i [@fadeInOut] (click)="this.eliminarGranja(i)" *ngIf="editMode" class="fa-solid fa-trash"></i>
           </div>

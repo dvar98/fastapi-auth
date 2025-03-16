@@ -9,7 +9,6 @@ import { VentasComponent } from './pages/ventas/ventas.component';
 import { GastosComponent } from './pages/gastos/gastos.component';
 import { guardsGuard } from './components/header/guards/guards.guard';
 import { InventarioComponent } from './pages/inventario/inventario.component';
-import { UploadDataComponent } from './pages/upload-data/upload-data.component';
 import { AgregarUsuarioComponent } from './pages/agregar-usuario/agregar-usuario.component';
 
 
@@ -46,10 +45,6 @@ const routes: Routes = [
   {
     path: 'inventario',
     component: InventarioComponent
-  },
-  {
-    path: 'upload-data',
-    component: UploadDataComponent
   },
   {
   path: 'agregar-usuario',

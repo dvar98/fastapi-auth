@@ -1,7 +1,7 @@
 import Galpon from "./galpon.interface"
 
 export default interface Granja {
+  id: string
   name: string
-  path: string
-  galpones?: Galpon[]
+  galpones: { [id: string]: Galpon }
 }

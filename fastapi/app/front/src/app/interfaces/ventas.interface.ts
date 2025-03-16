@@ -1,11 +1,11 @@
-import { Timestamp } from "@angular/fire/firestore"
 import DetalleVenta from "./detalleVenta.interface"
 
 export default interface Ventas {
-  id: number
-  fecha: Timestamp
+  id?: number
+  fecha?: Date
+  consecutivo: number
   cliente: string
-  detalle: DetalleVenta[]
+  productos: DetalleVenta[]
   totalVenta: number
 }
 

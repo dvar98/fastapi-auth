@@ -82,16 +82,16 @@
                 <th>Valor</th>
               </tr>
               <ng-container *ngFor="let venta of this.ventasFiltradas[this.currentPageVentas]">
-                <tr *ngFor="let detalle of venta.detalle; let i = index" class="table-content">
-                  <td *ngIf="i === 0" [attr.rowspan]="venta.detalle.length">{{ venta.id }}</td>
-                  <td *ngIf="i === 0" [attr.rowspan]="venta.detalle.length">{{ venta.fecha.toDate() |
+                <tr *ngFor="let productos of venta.productos; let i = index" class="table-content">
+                  <td *ngIf="i === 0" [attr.rowspan]="venta.productos.length">{{ venta.id }}</td>
+                  <td *ngIf="i === 0" [attr.rowspan]="venta.productos.length">{{ venta.fecha |
                     date:'dd/MMMM/yyyy':'es' }}</td>
-                  <td *ngIf="i === 0" [attr.rowspan]="venta.detalle.length">{{ venta.fecha.toDate() | date:'hh:mma':'es'
+                  <td *ngIf="i === 0" [attr.rowspan]="venta.productos.length">{{ venta.fecha | date:'hh:mma':'es'
                     }}</td>
-                  <td *ngIf="i === 0" [attr.rowspan]="venta.detalle.length">{{ venta.cliente }}</td>
-                  <td>{{ detalle.tipo }}</td>
-                  <td>{{ detalle.cantidad | number }}</td>
-                  <td *ngIf="i === 0" [attr.rowspan]="venta.detalle.length">{{ moneyFormat(venta.totalVenta) }}</td>
+                  <td *ngIf="i === 0" [attr.rowspan]="venta.productos.length">{{ venta.cliente }}</td>
+                  <td>{{ productos.tipo }}</td>
+                  <td>{{ productos.cantidad | number }}</td>
+                  <td *ngIf="i === 0" [attr.rowspan]="venta.productos.length">{{ moneyFormat(venta.totalVenta) }}</td>
                 </tr>
               </ng-container>
             </tbody>
@@ -137,8 +137,8 @@
               </tr>
               <tr *ngFor="let gasto of this.gastosFiltrados[this.currentPageGastos]" class="table-content">
                 <td>{{ gasto.id }}</td>
-                <td>{{gasto.fecha.toDate() | date:'dd/MMMM/yyyy':'es'}}</td>
-                <td>{{gasto.fecha.toDate() | date:'hh:mm a':'es'}}</td>
+                <td>{{gasto.fecha | date:'dd/MMMM/yyyy':'es'}}</td>
+                <td>{{gasto.fecha | date:'hh:mm a':'es'}}</td>
                 <td>{{moneyFormat(gasto.total)}}</td>
                 <td>{{gasto.concepto}}</td>
               </tr>

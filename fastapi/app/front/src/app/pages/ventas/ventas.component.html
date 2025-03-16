@@ -19,16 +19,6 @@
       <div id="formGranjas" class="box">
         <div id="ulGranjas" class="box">
           <section>
-            <label class="labelForm" for="fecha">Fecha</label>
-            <input class="inputForm" type="text" name="fecha" id=""
-              value="{{venta.fecha.toDate() | date:'fullDate':'es'}}" readonly>
-          </section>
-          <section>
-            <label class="labelForm" for="hora">Hora</label>
-            <input class="inputForm" type="text" name="hora" id="" value="{{venta.fecha.toDate() | date:'h:mm a'}}"
-              readonly>
-          </section>
-          <section>
             <label class="labelForm" for="cliente">Cliente</label>
             <input class="inputForm" type="text" name="cliente" id="" [value]="this.venta.cliente"
               (change)="setCliente($event)">

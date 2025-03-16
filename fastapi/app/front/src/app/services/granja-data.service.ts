@@ -1,9 +1,7 @@
 import { Injectable } from '@angular/core';
 import { UserAuthService } from './user-auth.service';
-import { DocumentReference } from '@angular/fire/firestore';
-import { GetDataFirebaseService } from './get-data-firebase.service';
 import Granja from '../interfaces/granja.interface';
-import Galpon from '../interfaces/galpon.interface';
+import { HttpClient } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root'
@@ -11,52 +9,51 @@ import Galpon from '../interfaces/galpon.interface';
 
 // Servicio que se encarga de manejar la información de las granjas
 export class GranjaDataService {
-  private granjasUser: Granja[] = [];
-  private granjaSeleccionada: Granja = { name: '', path: '' };
+  private granjasUser: { [id: string]: Granja } = {};
+  private granjaSeleccionada: Granja = { id: "", name: '', galpones: {} };
 
   constructor(
     private userAuth: UserAuthService,
-    private getDataFirebase: GetDataFirebaseService
+    private http: HttpClient
   ) { }
 
   // Menu de granjas disponibles por usuario
   async setBasicGranjas() {
-    const arrayGranjasRef: DocumentReference[] = this.userAuth.getUser().granjas;
-    this.granjasUser = []; //Siempre que se vaya a llenar el arreglo, debe estar vacio.
-    await arrayGranjasRef.forEach(async (granjaRef) => {
-      await this.getDataFirebase.getDocByReference(granjaRef).then((granja) => {
-        const newGranja: Granja = {
-          name: granja.data().name,
-          path: granjaRef.path
-        };
-        this.granjasUser.push(newGranja);
+    this.granjasUser = {};
+
+    // Se obtiene el id del usuario
+    const user_id = this.userAuth.getUser().id;
+    this.http.get(`http://localhost:8000/${user_id}/granjas/`)
+      .toPromise()
+      .then((response: any) => {
+        response.forEach((granja: any) => {
+          this.granjasUser[granja.id] = {
+            id: granja.id,
+            name: granja.name,
+            galpones: {},
+          };
+        });
       });
-    });
   }
 
   // Función que devuelve las granjas del usuario
-  getGranjasUser(): Granja[] {
+  getGranjasUser(): { [id: string]: Granja } {
     return this.granjasUser;
   }
 
   // Menú de galpones disponibles por usuarios
-  async setTotalInfoGranja(DocPathGranja: string) {
-    await this.getDataFirebase.getCollectionDocs(`${DocPathGranja}/galpones`).then((galponesGranja) => {
+  async setTotalInfoGranja(id_granja: string) {
+    await this.http.get(`http://localhost:8000/${id_granja}/galpones/`)
+      .toPromise()
+      .then((response: any) => {
+        response.forEach((galpon: any) => {
+          this.granjasUser[id_granja].galpones[galpon.id] = { id: galpon.id, name: galpon.name };
+        });
+      });
 
-      // Se agrega la referencia del documento para cada galpon presente en la colección para poder acceder a la información de cada galpón.
-      for (let i = 0; i < galponesGranja.length; i++) {
-        galponesGranja[i] = {
-          ...galponesGranja[i].data(),
-          ref: galponesGranja[i].ref.path
-        };
-      }
-
-      // Se actualiza la granja seleccionada con la información de sus galpones
-      this.granjaSeleccionada = {
-        ...this.granjaSeleccionada,
-        galpones: galponesGranja
-      };
-    });
+    // Se actualiza la granja seleccionada
+    this.granjaSeleccionada = this.granjasUser[id_granja];
+    return this.granjaSeleccionada;
   }
 
   // Función que devuelve la granja seleccionada
@@ -70,58 +67,50 @@ export class GranjaDataService {
   }
 
   // Función que crea una granja
-  async crearGranja(nombre: string) {
-    // transformar nombre para asignarle un id
-    const id = nombre.toLowerCase().replace(/ /g, '-');
-    return await this.getDataFirebase.createDoc('granjas/', { name: nombre }, id).then(async (docRef: any) => {
-      await this.userAuth.addGranjaToUser(docRef); // Agrega la granja al usuario
-      this.setBasicGranjas(); // Vuelve a descargar la información de las granjas
-      return true;
-    }).catch(() => {
-      return false;
-    });
+  async crearGranja(name: string) {
+    const id = name.toLowerCase().replace(/ /g, '-');
+    return await this.http.post(`http://localhost:8000/${this.userAuth.getUser().id}/granjas/create/`, { name: name })
+      .toPromise()
+      .then((response: any) => {
+        this.setBasicGranjas(); // Vuelve a descargar la información de las granjas
+        return true;
+      })
+      .catch((error: any) => {
+        return error;
+      });
   }
 
   // Funcion que elimina una granja
-  async eliminarGranja(index: number) {
-    const granja = this.granjasUser[index];
-    await this.getDataFirebase.deleteDoc(granja.path).then(async (docRef: any) => {
-      if (docRef) {
-        await this.userAuth.deleteGranja(docRef).then(() => {
-          this.setBasicGranjas();
-        }).catch(() => {
-          alert
-            ('Error al eliminar la granja');
-        });
-      }
-    });
+  async eliminarGranja(id: string) {
+    return await this.http.delete(`http://localhost:8000/granjas/${id}/`)
+      .toPromise()
+      .then(() => {
+        this.setBasicGranjas(); // Vuelve a descargar la información de las granjas
+        return true;
+      })
+      .catch(() => {
+        return false;
+      });
   }
 
   // Función que crea un galpón
-  async crearGalpon(nombre: string) {
-    const id = nombre.toLowerCase().replace(/ /g, '-');
-    const galpon = {
-      name: nombre,
-      consecutivoVentas: 0,
-      consecutivoGastos: 0,
-    }
-
-    const granjaPath = this.granjaSeleccionada.path;
-    return await this.getDataFirebase.createDoc(`${granjaPath}/galpones`, galpon, id).then(async () => {
-      await this.setTotalInfoGranja(granjaPath);
-      return true;
-    });
+  async crearGalpon(name: string) {
+    return await this.http.post(`http://localhost:8000/${this.granjaSeleccionada.id}/galpones/create/`, { name: name })
+      .toPromise()
+      .then(() => {
+        this.setBasicGranjas();
+        return true;
+      })
+      .catch(() => {
+        return false;
+      });
   }
 
   //Función que elimina un galpón
   async eliminarGalpon(index: number) {
-    const granjaPath = this.granjaSeleccionada.path;
     if (this.granjaSeleccionada.galpones) {
-      const galponPath = this.granjaSeleccionada.galpones[index].ref;
-      return await this.getDataFirebase.deleteDoc(galponPath).then(async () => {
-        await this.setTotalInfoGranja(granjaPath);
-        return true;
-      });
+      const id: string = Object.keys(this.granjaSeleccionada.galpones)[index];
+      return await this.http.delete(`http://localhost:8000/galpones/${id}/`)
     } else {
       alert('No existen galpones disponibles');
       return false;
@@ -130,7 +119,6 @@ export class GranjaDataService {
 
   // Función para obtener las granjas
   getGranjas() {
-    return this.getDataFirebase.getCollectionDocs('granjas');
+    return this.granjasUser;
   }
-
 }

@@ -3,11 +3,24 @@ import hashlib
 from pydantic import BaseModel, validator
 from typing import Annotated, List
 from sqlmodel import Field, Session, SQLModel, create_engine, select, Relationship
-from sqlalchemy import JSON, Column, Integer, String
+from sqlalchemy import JSON, Column, Integer, String, DateTime
+from datetime import datetime
 import os
 from dotenv import load_dotenv
+from fastapi.middleware.cors import CORSMiddleware
+
 
 app = FastAPI()
+
+# Permitir CORS (ajusta origins según sea necesario)
+app.add_middleware(
+    CORSMiddleware,
+    # Cambia "*" por la URL de tu frontend en producción
+    allow_origins=["http://localhost:4200"],
+    allow_credentials=True,
+    allow_methods=["*"],  # Permitir todos los métodos (POST, GET, etc.)
+    allow_headers=["*"],  # Permitir todos los headers
+)
 
 
 class User(SQLModel, table=True):
@@ -34,7 +47,7 @@ UserAuth.user = Relationship(back_populates="auth")
 class Granja(SQLModel, table=True):
     id: int = Field(default=None,
                     sa_column=Column(Integer, primary_key=True, index=True, autoincrement=True))
-    nombre: str = Field(sa_column=Column(String, nullable=False))
+    name: str = Field(sa_column=Column(String, nullable=False))
     user_id: int = Field(foreign_key="user.id")
 
 
@@ -44,8 +57,12 @@ Granja.user = Relationship(back_populates="user")
 class Galpon(SQLModel, table=True):
     id: int = Field(default=None,
                     sa_column=Column(Integer, primary_key=True, index=True, autoincrement=True))
-    nombre: str = Field(sa_column=Column(String, nullable=False))
+    name: str = Field(sa_column=Column(String, nullable=False))
     granja_id: int = Field(foreign_key="granja.id")
+    consecutivoVentas: int = Field(sa_column=Column(Integer, nullable=True))
+    consecutivoGastos: int = Field(sa_column=Column(Integer, nullable=True))
+    ventasTotales: float = Field(sa_column=Column(Integer, nullable=True))
+    gastosTotales: float = Field(sa_column=Column(Integer, nullable=True))
 
 
 Galpon.granja = Relationship(back_populates="granja")
@@ -61,11 +78,11 @@ class ProductoVentaLink(SQLModel, table=True):
 class Venta(SQLModel, table=True):
     id: int = Field(default=None,
                     sa_column=Column(Integer, primary_key=True, index=True, autoincrement=True))
-    fecha: str = Field(sa_column=Column(String, nullable=False))
+    fecha: datetime = Field(sa_column=Column(DateTime, nullable=False))
     total: float = Field(sa_column=Column(Integer, nullable=False))
-    user_id: int = Field(foreign_key="user.id")
     productos: List["Producto"] = Relationship(
         back_populates="ventas", link_model=ProductoVentaLink)
+    consecutivo: int = Field(sa_column=Column(Integer))
     galpon_id: int = Field(foreign_key="galpon.id")
 
 
@@ -75,17 +92,16 @@ Venta.galpon = Relationship(back_populates="galpon")
 class Gasto(SQLModel, table=True):
     id: int = Field(default=None,
                     sa_column=Column(Integer, primary_key=True, index=True, autoincrement=True))
-    fecha: str = Field(sa_column=Column(String, nullable=False))
+    fecha: datetime = Field(sa_column=Column(DateTime, nullable=False))
     concepto: str = Field(sa_column=Column(String, nullable=False))
     categoria: str = Field(sa_column=Column(String, nullable=False))
     valorUnitario: float = Field(sa_column=Column(Integer, nullable=False))
     cantidad: int = Field(sa_column=Column(Integer, nullable=False))
     total: float = Field(sa_column=Column(Integer, nullable=False))
-    user_id: int = Field(foreign_key="user.id")
+    consecutivo: int = Field(sa_column=Column(Integer, nullable=False))
     galpon_id: int = Field(foreign_key="galpon.id")
 
 
-Gasto.user = Relationship(back_populates="user")
 Gasto.galpon = Relationship(back_populates="galpon")
 
 
@@ -147,22 +163,12 @@ class UserCreate(BaseModel):
     email: str
     name: str
     password: str
-    roles: list[str] = Field(default_factory=lambda: [
-                             "usuario"], sa_column=Column(JSON))
-
-    @validator("roles", pre=True, each_item=True)
-    def validate_roles(cls, v):
-        allowed_roles = {"admin", "editor", "usuario"}
-        if v not in allowed_roles:
-            raise ValueError(
-                f"Role '{v}' is not allowed. Allowed roles are: {allowed_roles}")
-        return v
 
 
 @app.post("/users/register/")
 def create_user(user: UserCreate, session: SessionDep) -> User:
     # userInfo
-    userInfo = User(email=user.email, name=user.name, roles=user.roles)
+    userInfo = User(email=user.email, name=user.name, roles=["user"])
     session.add(userInfo)
     session.commit()
     session.refresh(userInfo)
@@ -197,9 +203,9 @@ def login_user(user: UserLogin, session: SessionDep):
     return user
 
 
-@app.post("/users/login/")
+@app.post("/users/login")
 async def login_user(user: User = Depends(login_user)):
-    return {"message": f"Login exitoso, {user.name}"}
+    return user
 
 
 @app.get("/users/")
@@ -208,7 +214,8 @@ def read_users(
     offset: int = 0,
     limit: Annotated[int, Query(le=100)] = 100,
 ) -> list[User]:
-    users = session.exec(select(User).offset(offset).limit(limit)).all()
+    users = session.exec(select(User).order_by(
+        User.name).offset(offset).limit(limit)).all()
     return users
 
 
@@ -232,26 +239,23 @@ def delete_user(user_id: int, session: SessionDep):
 
 # Granjas
 
-@app.post("/{user_id}/granjas/create/{granja_name}")
-def create_granja(user_id: int, granja_name: str, session: SessionDep):
-    granja = Granja(nombre=granja_name, user_id=user_id)
+class GranjaGalponCreate(BaseModel):
+    name: str
+
+
+@app.post("/{user_id}/granjas/create/")
+def create_granja(user_id: int, granja: GranjaGalponCreate, session: SessionDep):
+    granja = Granja(name=granja.name, user_id=user_id)
     session.add(granja)
     session.commit()
     session.refresh(granja)
     return granja
 
 
-@app.get("/granjas/")
-def read_granjas(session: SessionDep, offset: int = 0, limit: Annotated[int, Query(le=100)] = 100,) -> list[Granja]:
-    granjas = session.exec(
-        select(Granja).offset(offset).limit(limit)).all()
-    return granjas
-
-
 @app.get("/{user_id}/granjas/")
 def read_granjas_by_user(user_id: int, session: SessionDep):
     granjas = session.exec(select(Granja).where(
-        Granja.user_id == user_id)).all()
+        Granja.user_id == user_id).order_by(Granja.name)).all()
     return granjas
 
 
@@ -266,28 +270,43 @@ def delete_granja(granja_id: int, session: SessionDep):
 
 
 # Galpones
-
-@app.post("/{granja_id}/galpones/create/{galpon_name}")
-def create_galpon(granja_id: int, galpon_name: str, session: SessionDep):
-    galpon = Galpon(nombre=galpon_name, granja_id=granja_id)
+@app.post("/{granja_id}/galpones/create/")
+def create_galpon(granja_id: int, galpon: GranjaGalponCreate, session: SessionDep):
+    galpon = Galpon(name=galpon.name, granja_id=granja_id)
     session.add(galpon)
     session.commit()
     session.refresh(galpon)
     return galpon
 
 
-@app.get("/galpones/")
-def read_galpones(session: SessionDep, offset: int = 0, limit: Annotated[int, Query(le=100)] = 100,) -> list[Galpon]:
-    galpones = session.exec(
-        select(Galpon).offset(offset).limit(limit)).all()
-    return galpones
+@app.post("/galpones/${galpon_id}/update/")
+def update_galpon(galpon_id: int, consecutivoVentas: int, consecutivoGastos: int, ventasTotales: int, gastosTotales: int, session: SessionDep):
+    galpon = session.get(Galpon, galpon_id)
+    if not galpon:
+        raise HTTPException(status_code=404, detail="Galpon not found")
+    galpon.consecutivoVentas = consecutivoVentas
+    galpon.consecutivoGastos = consecutivoGastos
+    galpon.ventasTotales = ventasTotales
+    galpon.gastosTotales = gastosTotales
+    session.add(galpon)
+    session.commit()
+    session.refresh(galpon)
+    return galpon
 
 
 @app.get("/{granja_id}/galpones/")
 def read_galpones_by_granja(granja_id: int, session: SessionDep):
     galpones = session.exec(select(Galpon).where(
-        Galpon.granja_id == granja_id)).all()
+        Galpon.granja_id == granja_id).order_by(Galpon.name)).all()
     return galpones
+
+
+@app.get("/galpones/{galpon_id}")
+def read_galpon(galpon_id: int, session: SessionDep) -> Galpon:
+    galpon = session.get(Galpon, galpon_id)
+    if not galpon:
+        raise HTTPException(status_code=404, detail="Galpon not found")
+    return galpon
 
 
 @app.delete("/galpones/{galpon_id}")
@@ -300,21 +319,15 @@ def delete_galpon(galpon_id: int, session: SessionDep):
     return {"ok": True}
 
 
-@app.get("/productos/")
-def read_productos(
+@app.get('/{user_id}/productos/')
+def read_productos_by_user(
+    user_id: int,
     session: SessionDep,
     offset: int = 0,
     limit: Annotated[int, Query(le=100)] = 100,
-) -> list[Producto]:
-    productos = session.exec(
-        select(Producto).offset(offset).limit(limit)).all()
-    return productos
-
-
-@app.get('/{user_id}/productos/')
-def read_productos_by_user(user_id: int, session: SessionDep):
+):
     productos = session.exec(select(Producto).where(
-        Producto.user_id == user_id)).all()
+        Producto.user_id == user_id).order_by(Producto.nombre).offset(offset).limit(limit)).all()
     return productos
 
 
@@ -352,55 +365,72 @@ def delete_product(producto_id: int, session: SessionDep):
     return {"ok": True}
 
 
+class DetalleVenta(BaseModel):
+    tipo: str
+    cantidad: int
+    valorUnitario: int
+    total: int
+
+
 class VentaCreate(BaseModel):
     user_id: int
-    fecha: str
-    productos: List[int]
+    consecutivo: int
+    cliente: str
+    productos: List[DetalleVenta]
+    totalVenta: int
 
 
-@app.post("/{galpon_id}/ventas/create/")
+@app.post("galpones/{galpon_id}/ventas/create/")
 def create_venta(galpon_id: str, venta: VentaCreate, session: SessionDep):
-    # Calcular total
-    totalVenta = 0
-    for producto_id in venta.productos:
-        producto = session.get(Producto, producto_id)
-        totalVenta += producto.precio
     # Crear la venta
-    venta_db = Venta(fecha=venta.fecha, total=totalVenta,
+    venta_db = Venta(**venta.model_dump(), fecha=datetime.now(),
                      user_id=venta.user_id, galpon_id=galpon_id)
     session.add(venta_db)
     session.commit()
     session.refresh(venta_db)
 
     # Crear las relaciones con los productos
-    for producto_id in venta.productos:
-        # restar en stock
-        producto = session.get(Producto, producto_id)
-        if producto.cantidadStock == 0:
-            raise HTTPException(
-                status_code=400, detail="Producto sin stock")
-        producto.cantidadStock -= 1
-        session.add(producto)
-        producto_venta_link = ProductoVentaLink(
-            producto_id=producto_id, venta_id=venta_db.id)
-        session.add(producto_venta_link)
+    # for producto_id in venta.productos:
+    #     # restar en stock
+    #     producto = session.get(Producto, producto_id)
+    #     if producto.cantidadStock == 0:
+    #         raise HTTPException(
+    #             status_code=400, detail="Producto sin stock")
+    #     producto.cantidadStock -= 1
+    #     session.add(producto)
+    #     producto_venta_link = ProductoVentaLink(
+    #         producto_id=producto_id, venta_id=venta_db.id)
+    #     session.add(producto_venta_link)
 
-    session.commit()
-    session.refresh(venta_db)
+    # session.commit()
+    # session.refresh(venta_db)
     return venta_db
 
 
 @app.get("/{user_id}/ventas/")
-def read_ventas_by_user(user_id: int, session: SessionDep):
+def read_ventas_by_user(
+    user_id: int,
+    session: SessionDep,
+    offset: int = 0,
+    limit: Annotated[int, Query(le=100)] = 100,
+):
     ventas = session.exec(select(Venta).where(
-        Venta.user_id == user_id)).all()
+        Venta.user_id == user_id).order_by(Venta.fecha).offset(offset).limit(limit)).all()
     return ventas
 
 
-@app.get("/{galpon_id}/ventas/")
-def read_ventas_by_galpon(galpon_id: int, session: SessionDep):
-    ventas = session.exec(select(Venta).where(
-        Venta.galpon_id == galpon_id)).all()
+@app.get("/galpones/{galpon_id}/ventas/")
+def read_ventas_by_galpon(
+    galpon_id: int,
+    session: SessionDep,
+    offset: int = 0,
+    limit: int = 10
+):
+    query = select(Venta).where(Venta.galpon_id == galpon_id)
+
+    query = query.order_by(Venta.fecha).offset(offset).limit(limit)
+
+    ventas = session.exec(query).all()
     return ventas
 
 
@@ -413,17 +443,16 @@ def read_venta(venta_id: int, session: SessionDep) -> Venta:
 
 
 class GastoCreate(BaseModel):
-    user_id: int
-    fecha: str
     concepto: str
     categoria: str
     valorUnitario: float
     cantidad: int
+    consecutivo: int
 
 
-@app.post("/{galpon_id}/gastos/create/")
+@app.post("/galpones/{galpon_id}/gastos/create/")
 def create_gasto(galpon_id: int, gasto: GastoCreate, session: SessionDep):
-    gasto_db = Gasto(**gasto.model_dump(), total=gasto.cantidad *
+    gasto_db = Gasto(fecha=datetime.now(), **gasto.model_dump(), total=gasto.cantidad *
                      gasto.valorUnitario, galpon_id=galpon_id)
     session.add(gasto_db)
     session.commit()
@@ -432,16 +461,26 @@ def create_gasto(galpon_id: int, gasto: GastoCreate, session: SessionDep):
 
 
 @app.get("/{user_id}/gastos/")
-def read_gastos_by_user(user_id: int, session: SessionDep):
+def read_gastos_by_user(
+    user_id: int,
+    session: SessionDep,
+    offset: int = 0,
+    limit: Annotated[int, Query(le=100)] = 100,
+):
     gastos = session.exec(select(Gasto).where(
-        Gasto.user_id == user_id)).all()
+        Gasto.user_id == user_id).order_by(Gasto.fecha).offset(offset).limit(limit)).all()
     return gastos
 
 
-@app.get("/{galpon_id}/gastos/")
-def read_gastos_by_galpon(galpon_id: int, session: SessionDep):
+@app.get("/galpones/{galpon_id}/gastos/")
+def read_gastos_by_galpon(
+    galpon_id: int,
+    session: SessionDep,
+    offset: int = 0,
+    limit: Annotated[int, Query(le=100)] = 100,
+):
     gastos = session.exec(select(Gasto).where(
-        Gasto.galpon_id == galpon_id)).all()
+        Gasto.galpon_id == galpon_id).order_by(Gasto.fecha).offset(offset).limit(limit)).all()
     return gastos
 
 

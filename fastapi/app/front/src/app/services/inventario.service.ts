@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import inventario from '../interfaces/inventario.interface';
-import { GetDataFirebaseService } from './get-data-firebase.service';
 import { GalponDataService } from './galpon-data.service';
 
 @Injectable({
@@ -9,7 +8,6 @@ import { GalponDataService } from './galpon-data.service';
 export class InventarioService {
 
   constructor(
-    private getDataFirebase: GetDataFirebaseService,
     private galponDataService: GalponDataService
   ) { }
 
@@ -26,7 +24,7 @@ export class InventarioService {
 
   // Realiza la ejecucion de los update para todos los documentos de inventario pendientes por subir. (No internet conection)
   async updateInventario(inventario: inventario) {
-    const refColeccionGalpon = this.galponDataService.getGalpon().ref + '/inventario';
-    await this.getDataFirebase.createDoc(refColeccionGalpon, inventario);
+    // const refColeccionGalpon = this.galponDataService.getGalpon().ref + '/inventario';
+    // await this.getDataFirebase.createDoc(refColeccionGalpon, inventario);
   }
 }

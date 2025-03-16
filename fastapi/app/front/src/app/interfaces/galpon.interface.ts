@@ -3,10 +3,10 @@ import Ventas from "./ventas.interface"
 import inventario from "./inventario.interface"
 
 export default interface Galpon {
+  id: string
   name: string
-  ref: string
-  consecutivoVentas: number
-  consecutivoGastos: number
+  consecutivoVentas?: number
+  consecutivoGastos?: number
   ventasTotales?: number
   gastosTotales?: number
   ventas?: Ventas[]

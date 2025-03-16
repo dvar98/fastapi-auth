@@ -40,7 +40,7 @@ import Granja from 'src/app/interfaces/granja.interface';
   ]
 })
 export class MenuGranjasComponent implements OnInit {
-  granjas: Granja[] = [];
+  granjas: { [id: string]: Granja } = {};
 
   path: { name: string, path: string }[] = [
     { name: 'granjas', path: 'menu-granjas' },
@@ -58,7 +58,10 @@ export class MenuGranjasComponent implements OnInit {
     private authService: UserAuthService
   ) { }
 
-  nameUser: string = ""
+  user = {
+    id: "",
+    name: "",
+  }
 
   async ngOnInit() {
     await this.authService.verifyUser().then((isLogged) => {
@@ -66,20 +69,22 @@ export class MenuGranjasComponent implements OnInit {
         this.router.navigate(['/']);
       }
     })
-    this.nameUser = this.authService.getUser().name
+    const user = this.authService.getUser();
+    this.user.id = user.id
+    this.user.name = user.name
     this.granjaService.setBasicGranjas();
     this.granjas = this.granjaService.getGranjasUser();
   }
 
   async option(indexSelection: number) {
     this.granjaService.actualizarGranjaSeleccionada(indexSelection);
-    await this.granjaService.setTotalInfoGranja(this.granjas[indexSelection].path);
+    await this.granjaService.setTotalInfoGranja(Object.keys(this.granjas)[indexSelection]);
     this.router.navigate(['/vista-general-granja']);
   }
 
   async crearGranja(nombre: string) {
     // Validar si ya existe el nombre de la granja
-    if (this.granjas.find(granja => granja.name.toLowerCase() === nombre.toLowerCase())) {
+    if (Object.values(this.granjas).find(granja => granja.name.toLowerCase() === nombre.toLowerCase())) {
       this.messageAlertNombre = true;
       return;
     }
@@ -94,13 +99,14 @@ export class MenuGranjasComponent implements OnInit {
     await this.granjaService.crearGranja(nombre).then(() => {
       this.granjas = this.granjaService.getGranjasUser();
       this.formGranja = false;
-    }).catch(() => {
-      alert('Error al crear la granja');
+    }).catch((error: any) => {
+      alert('Error al crear la granja:' + error);
     });
   }
 
   async eliminarGranja(index: number) {
-    await this.granjaService.eliminarGranja(index).then(() => {
+    const id = Object.keys(this.granjas)[index];
+    await this.granjaService.eliminarGranja(id).then(() => {
       this.granjas = this.granjaService.getGranjasUser();
       this.editMode = false;
     });
@@ -112,5 +118,10 @@ export class MenuGranjasComponent implements OnInit {
 
   navigateUpload() {
     this.router.navigate(['/upload-data'])
+  }
+
+  getValuesDict(dict: any): Granja[] {
+    if (!dict) return [];
+    return Object.values(dict);
   }
 }

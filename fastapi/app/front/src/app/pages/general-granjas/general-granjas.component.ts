@@ -6,6 +6,7 @@ import Granja from 'src/app/interfaces/granja.interface';
 import { UserAuthService } from 'src/app/services/user-auth.service';
 
 import { trigger, transition, style, animate } from '@angular/animations';
+import Galpon from 'src/app/interfaces/galpon.interface';
 
 @Component({
   selector: 'app-general-granjas',
@@ -42,7 +43,7 @@ import { trigger, transition, style, animate } from '@angular/animations';
   ]
 })
 export class GeneralGranjasComponent {
-  granja: Granja = { name: '', path: '' };
+  granja: Granja = { name: '', id: '', galpones: {} }; // Granja seleccionada
 
   nombreSugeridoGalpon: string = ''; // Nombre sugerido para el galpon
 
@@ -72,7 +73,7 @@ export class GeneralGranjasComponent {
     const granja = this.granjaService.getGranjaSeleccionada();
     if (granja.galpones) {
       this.granja = granja;
-      const ref = this.granja.path.split('/').pop();
+      const ref = this.granja.name;
       if (ref) {
         this.path = [
           { name: 'granjas', path: 'menu-granjas' },
@@ -84,7 +85,8 @@ export class GeneralGranjasComponent {
   }
 
   async option(indexSelection: number) {
-    this.galponService.setIndexGalpon(indexSelection);
+    const id = Object.keys(this.granja.galpones)[indexSelection];
+    this.galponService.setIndexGalpon(id);
     this.router.navigate(['/menu-seleccion-galpon']);
   }
 
@@ -94,7 +96,7 @@ export class GeneralGranjasComponent {
 
   showForm() {
     if (this.granja.galpones) {
-      this.nombreSugeridoGalpon = 'Galpón ' + (this.granja.galpones.length + 1);
+      this.nombreSugeridoGalpon = 'Galpón ' + (Object.keys(this.granja.galpones).length + 1);
     } else {
       this.nombreSugeridoGalpon = 'Galpón 1';
     }
@@ -103,7 +105,7 @@ export class GeneralGranjasComponent {
 
   async crearGalpon(name: string) {
     // verificar si ya existe un galpon con ese nombre
-    if (this.granja.galpones?.find(galpon => galpon.name.toLowerCase() === name.toLowerCase())) {
+    if (Object.values(this.granja.galpones)?.find(galpon => galpon.name.toLowerCase() === name.toLowerCase())) {
       this.messageAlertNombre = true;
       return;
     }
@@ -116,7 +118,9 @@ export class GeneralGranjasComponent {
 
     this.chargeIcon = true;
     await this.granjaService.crearGalpon(name).then(() => {
-      this.granja = this.granjaService.getGranjaSeleccionada();
+      this.granjaService.setTotalInfoGranja(this.granja.id).then((granja: Granja) => {
+        this.granja = granja;
+      });
       this.chargeIcon, this.formGranja = false;
     });
   }
@@ -127,5 +131,10 @@ export class GeneralGranjasComponent {
       this.granja = this.granjaService.getGranjaSeleccionada();
       this.chargeIcon, this.editMode = false;
     });
+  }
+
+  getValuesDict(dict: any): Galpon[] {
+    if (!dict) return [];
+    return Object.values(dict);
   }
 }
